@@ -1,0 +1,75 @@
+{% extends '/base.html' %} {% block body %}
+{% if sideFooter is not defined%}
+{% set sideFooter = False %}
+{% endif %}
+
+<script src="{{ url_for('static', filename='/js/tooltip.js') }}"></script>
+<script>
+    var isChromium = window.chrome;
+    var winNav = window.navigator;
+    var vendorName = winNav.vendor;
+    var isOpera = typeof window.opr !== "undefined";
+    var isIEedge = winNav.userAgent.indexOf("Edge") > -1;
+    var isIOSChrome = winNav.userAgent.match("CriOS");
+
+    if (isIOSChrome) {
+    // is Google Chrome on IOS
+    } else if(
+    isChromium !== null &&
+    typeof isChromium !== "undefined" &&
+    vendorName === "Google Inc." &&
+    isOpera === false &&
+    isIEedge === false
+    ) {
+        if (typeof AlgoSigner === 'undefined') {
+            displayStatusBar("We use the AlgoSigner extention for Chrome for the transactions, please intall it to bid/buy/sell.")
+        }
+    } else { 
+        displayStatusBar("We use the AlgoSigner extention for Chrome for the transactions. Please use Chrome with AlgoSigner installed it to bid/buy/sell.")
+    }
+
+    function displayStatusBar(message) {
+        let statusBar = document.createElement("div");
+        statusBar.id = "algo-status-bar";
+        document.documentElement.appendChild(statusBar);
+
+        let closeButton = document.createElement("button");
+        closeButton.id = "algo-status-bar-dismiss";
+        closeButton.innerText = "X";
+        statusBar.appendChild(closeButton);
+
+        statusBar.innerHTML = statusBar.innerHTML + message;
+
+        document.getElementById("algo-status-bar-dismiss")
+            .addEventListener("click", () => {
+                statusBar.remove();
+            });
+    } 
+</script>
+
+<nav id="navbar">
+    <a href="/gallery">
+        <button>
+            <h1 class="logo">MyPic</h1>
+        </button>
+    </a>
+
+    {% set navigation_bar = [ 
+        ('/create', 'create_nav', 'Create'), 
+        ('/feed', 'feed_nav', 'Feed'), 
+        ('/favorites', 'favorites_nav', 'Favorites'),
+        ('/gallery', 'gallery_nav', 'Gallery'),
+        ('/account', 'account_nav', 'Account')
+    ] -%} 
+    {% set active_page = active_page|default('index') -%}
+    
+    {% for href, id, caption in navigation_bar %} 
+        <a href="{{ href|e }}" {% if id==active_page %} class="active" {% endif %}>{{ caption|e }}</a>
+    {% endfor %}
+
+    <div class="spacer"></div>
+
+    <a href="/logout">Logout</a>
+</nav>
+{% block content %}{% endblock %}
+{% endblock %}
