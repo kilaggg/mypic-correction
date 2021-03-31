@@ -3,13 +3,13 @@ from application.user import jti_in_blacklist
 from datetime import datetime, timedelta, timezone
 from flask import flash, redirect, url_for
 from flask_jwt_extended import create_access_token, get_jwt_identity, get_raw_jwt, JWTManager, set_access_cookies
+import os
 
 
 app.register_blueprint(auth_bp.bp)
 app.register_blueprint(main_bp.bp)
 app.register_blueprint(help_bp.bp)
-# TODO : Change secret key, remove debug
-app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
+app.secret_key = os.environ['secret_key'].encode('utf8')
 app.debug = True
 app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
 app.config["JWT_BLACKLIST_ENABLED"] = True
