@@ -1,4 +1,4 @@
-const LEDGER = 'TestNet';
+const LEDGER = 'MainNet';
 
 function connect(callback = () => {}) {
     if (typeof AlgoSigner === 'undefined') {
