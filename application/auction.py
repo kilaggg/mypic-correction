@@ -61,6 +61,7 @@ def manage_auction(form, username):
                             tx_id = transfer_algo_to_user(old_address, old_price * 1000000)
                             if verify_buy_transaction(tx_id):
                                 return "Bid was done."
+                        return "Bid was done without refund."
                     else:
                         tx_id = transfer_algo_to_user(address, price * 1000000)
                         if verify_buy_transaction(tx_id):

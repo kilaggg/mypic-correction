@@ -250,9 +250,7 @@ def gallery_navigation(username: str) -> str:
                 return json.dumps({"pictures": data_my_gallery})
 
             if request.form["more"] == "my-sell":
-                print("ici", username)
                 data_new_images = get_new_images(session.get('number_other_new_image'), username=username)
-                print("longueur", len(data_new_images))
                 session['number_other_new_image'] = session.get('number_other_new_image') + 1
                 return json.dumps({"pictures": data_new_images})
 
@@ -298,7 +296,6 @@ def gallery_navigation(username: str) -> str:
 @bp.route('/create', methods=('GET', 'POST'))
 @jwt_required
 def market() -> str:
-    print(request.form)
     if request.method == 'POST' and 'create' in request.form:
         error = None
         if 'file' not in request.files:
@@ -309,6 +306,10 @@ def market() -> str:
             error = "Price is required."
         if 'duration' not in request.form:
             error = "Duration is required."
+        if 'private' not in request.form:
+            error = "Private is required."
+        if 'nsfw' not in request.form:
+            error = "NSFW is required."
         try:
             int(request.form['price'])
         except ValueError:
@@ -319,8 +320,8 @@ def market() -> str:
             int(request.form['duration'])
         except ValueError:
             error = "Enter an integer for duration."
-        if int(request.form['duration']) > 48 or int(request.form['duration']) < 1:
-            error = "Choose a duration between 1 and 48 hours"
+        if int(request.form['duration']) > 200 or int(request.form['duration']) < 1:
+            error = "Choose a duration between 1 and 200 hours"
         if len(request.form['title']) > 13:
             error = "Title should be with a maximum of 13 characters."
         if not bool(re.match(REGEX_TITLE_IMAGE, request.form['title'])):
@@ -334,13 +335,29 @@ def market() -> str:
             title = request.form['title']
             price = int(request.form['price'])
             end_date = datetime.utcnow() + timedelta(hours=int(request.form['duration']))
-            public = 0 if 'private' in request.form else 1
-            nsfw = 1 if 'nsfw' in request.form else 0
+            public = 0 if request.form['private'] == 'on' else 1
+            nsfw = 0 if request.form['nsfw'] == 'off' else 1
             token_id = create_new_image(username, file, title, price, end_date, public, nsfw)
             return json.dumps({'status': 200,
                                'token_id': token_id})
-        return json.dumps({'status': 404,
-                               'e': error})
+        return json.dumps({'status': 404, 'e': error})
+
+    if request.method == 'POST' and 'validate' in request.form:
+        error = None
+        if 'token_id' not in request.form:
+            error = "Token ID is required."
+        if 'address' not in request.form:
+            error = "Address ID is required."
+        try:
+            int(request.form['token_id'])
+        except ValueError:
+            error = "Enter an integer for Token ID."
+        if error is None:
+            address = request.form['address']
+            email = get_jwt_identity()['email']
+            update_address(email, address)
+            return "Address confirmed."
+        return json.dumps({'status': 404, 'e': error})
     return render_template('app/create.html')
 
 

@@ -64,7 +64,7 @@
     })
     
     function submit_creation() {
-        addTooltip("Creation in process", "");
+        addTooltip("Creation in progress", "");
         var http = new XMLHttpRequest();
         http.open('POST', '/create', true);
 
@@ -78,8 +78,11 @@
 
         formData.append("file", files[0]);
 
-        $("#create-form input:not(#file-selector)").each(function (index) {
-            formData.append($(this).attr("name"), $(this).val());
+        document.querySelectorAll("#create-form input:not(#file-selector):not(input[type='checkbox'])").forEach(function (input) {
+            formData.append(input.name, input.value);
+        });
+        document.querySelectorAll("#create-form input[type='checkbox']").forEach(function (input) {
+            formData.append(input.name, (input.checked) ? "on" : "off" );
         });
         formData.append("create", "");
 
@@ -90,7 +93,20 @@
                     addTooltip("Creation failled", parsed.e);
                 } else if (parsed.status == 200) {
                     addTooltip("Creation done, please opt in to add it to your wallet", "");
-                    AlgoCreateNFT(parsed.token_id);
+                    AlgoCreateNFT(parsed.token_id, (from, tx, signedTx) => {
+                        let http2 = new XMLHttpRequest();
+                        http2.open('POST', '/create', true);
+
+                        let formData2 = new FormData();
+                        formData2.append("validate", "");
+                        formData2.append("token_id", parsed.token_id);
+                        formData2.append("address", from);
+                        http2.send(formData2);
+
+                        setTimeout(() => {
+                            window.location.href = "/gallery";
+                        }, 4000);
+                    });
                 }
             }
         }

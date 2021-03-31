@@ -10,8 +10,8 @@ socketio = SocketIO(app, logger=False, engineio_logger=False)
 dict_bid = {}
 dict_buy = {}
 
-algod_address = "https://testnet-algorand.api.purestake.io/ps2"
-algod_token = "Jd6iCCXxkG6HAeKl5ewYI9LCsP1D3tS37NgRRCXn"
+algod_address = os.environ['algod_address']
+algod_token = os.environ['algod_token']
 headers = {"X-API-Key": algod_token}
 algod_client = algod.AlgodClient(algod_token=algod_token, algod_address=algod_address, headers=headers)
 

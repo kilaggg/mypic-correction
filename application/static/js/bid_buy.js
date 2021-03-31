@@ -9,7 +9,7 @@ function bid(token_id, price, url) {
             if (parsed.status == 404) {
                 addTooltip("Bid failled for " + token_id, parsed.e);
             } else if (parsed.status == 200) {
-                addTooltip("Bid in process, allow up to a minute for the process.", "");
+                addTooltip("Bid in progress, wait a minute", "");
                 AlgoPay(parsed.to, parsed.amount, parsed.note, token_id, url, "validate_new");
             }
         }
@@ -19,7 +19,7 @@ function bid(token_id, price, url) {
 
 function buy(token_id, price, url) {
     let bidPrice = parseInt(price.innerText);
-    addTooltip("Buy in process, allow up to a minute for the process.", "");
+    addTooltip("Buy in in progress, wait a minute", "");
     AlgoSignIn(bidPrice, token_id, url);
 }
 
@@ -29,7 +29,7 @@ function sell(token_id, price, url) {
         addTooltip("Input a price to sell the picture");
         return;
     }
-    addTooltip("Sell in process, allow up to a minute for the process.", "");
+    addTooltip("Sell in progress, wait a minute", "");
     AlgoTransferAsset(token_id, bidPrice, url);
 }
 

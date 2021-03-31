@@ -127,14 +127,14 @@ function submitTransaction(amount, from, token_id, url, txID, type) {
     http.onreadystatechange = function () {//Call a function when the state changes.
         if (http.readyState == 4 && http.status == 200) {
             if (type == "validate_resale") {
-                addTooltip("Buy successfull", "You bought " + token_id + " for " + (amount / 1000000) + "algo");
+                addTooltip("Buy successfull", "You bought Token ID " + token_id + " for " + (amount / 1000000) + " algo");
                 try {
                     document.getElementById("picture-" + token_id).remove();
                 } catch (error) {
                     
                 }
             } else {
-                addTooltip("Bid successfull", "Your bid for " + token_id + ": " + amount);
+                addTooltip("Bid successfull", "Your bid for " + token_id + ": " + (amount / 1000000) + " algo");
             }
         }
     }
@@ -198,7 +198,7 @@ function validateTransfer(token_id, price, url, txID) {
     http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
     http.onreadystatechange = function () {//Call a function when the state changes.
         if (http.readyState == 4 && http.status == 200) {
-            addTooltip("Resale successfull", token_id + " resale is on for " + price + "algo");
+            addTooltip("Resale successfull", "Token ID " + token_id + " resale is on for " + price + " algo");
             try {
                 document.getElementById("picture-" + token_id).remove();
             } catch (error) {
@@ -273,9 +273,7 @@ function AlgoCreateNFT(token_id, callback = ()=>{}) {
             signIn(from, token_id, note, tx, (signedTx) => {
                 send_algo(signedTx, (s) => {
                     addTooltip("Opt in succesfull, redirecting you to the gallery.", "");
-                    setTimeout(() => {
-                        window.location.href = "/gallery";
-                    }, 4000);
+                    callback(from, tx, signedTx);
                 }, () => {
                     AlgoCreateNFT(token_id, callback)
                 });
