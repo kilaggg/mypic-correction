@@ -2,7 +2,7 @@
 {% set active_page = "create_nav" %}
 {% block content %} 
 <div id="market">
-    <form method="post" enctype=multipart/form-data>
+    <div id="create-form">
         {% with messages = get_flashed_messages() %} {% if messages %} <span class=errors> {{ messages[-1] }} </span> {% endif %} {% endwith %}
         <span class="file-selector-styled">
             <label for="file-selector"> Click to upload image </label>
@@ -11,10 +11,10 @@
         <img id="preview_sell_market" src="#" alt="Please seleact an image."/>
 
         <label for="price">Price (in <div class="algo"></div>):</label>
-        <input type="number" placeholder="Price" name="price" min="1" required>
+        <input type="number" placeholder="Price" name="price" min="1" value="1" required>
 
         <label for="duration">Duration (hours):</label>
-        <input type="number" placeholder="Sale Duration" name="duration" min="1" max="48" required>
+        <input type="number" placeholder="Sale Duration" name="duration" min="1" max="48" value="1" required>
 
     
         <label for="title">Title:</label>
@@ -37,26 +37,64 @@
             </span>
         </label>
         
-        <button type="submit" name="create" class="fat">Create Sell</button>
-    </form>
+        <button id="create-button" class="fat">Create Sell</button>
+    </div>
 </div> 
 
 <script>
     let reader = new FileReader();
-        reader.onload = function (e) {
-            $('#preview_sell_market').attr('src', e.target.result);
-        }
+    reader.onload = function (e) {
+        $('#preview_sell_market').attr('src', e.target.result);
+    }
 
-        function readURL(input) {
-            if (input.files && input.files[0]) {
-                reader.readAsDataURL(input.files[0]);
-            }
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            reader.readAsDataURL(input.files[0]);
         }
+    }
 
-        $("#file-selector").change(function () {
+    $("#file-selector").change(function () {
             readURL(this);
             $("#preview_sell_market").addClass("display");
             $("#market").addClass("preview");
         });
+
+    document.getElementById("create-button").addEventListener("click", () => {
+        submit_creation();
+    })
+    
+    function submit_creation() {
+        addTooltip("Creation in process", "");
+        var http = new XMLHttpRequest();
+        http.open('POST', '/create', true);
+
+        var formData = new FormData();
+
+        let files = document.getElementById("file-selector").files;
+        if (!(files && files[0])) {
+            addTooltip("Please select an image to sell", "");
+            return;
+        }
+
+        formData.append("file", files[0]);
+
+        $("#create-form input:not(#file-selector)").each(function (index) {
+            formData.append($(this).attr("name"), $(this).val());
+        });
+        formData.append("create", "");
+
+        http.onreadystatechange = function () {//Call a function when the state changes.
+            if (http.readyState == 4 && http.status == 200) {
+                let parsed = JSON.parse(http.responseText);
+                if (parsed.status == 404) {
+                    addTooltip("Creation failled", parsed.e);
+                } else if (parsed.status == 200) {
+                    addTooltip("Creation done, please opt in to add it to your wallet", "");
+                    AlgoCreateNFT(parsed.token_id);
+                }
+            }
+        }
+        http.send(formData);
+    }
 </script>
 {% endblock %}

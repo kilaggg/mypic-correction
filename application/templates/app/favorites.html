@@ -22,16 +22,12 @@
 
 <script src="https://cdn.socket.io/3.1.1/socket.io.min.js" integrity="sha384-gDaozqUvc4HTgo8iZjwth73C6dDDeOJsAgpxBcMpZYztUfjHXpzrpdrHRdVp8ySO" crossorigin="anonymous"></script>
 <script src="{{ url_for('static', filename='/js/countdown.js') }}"></script>
-<script src="{{ url_for('static', filename='/js/algo.js') }}"></script>
 <script src="{{ url_for('static', filename='/js/bid_buy.js') }}"></script>
 <script src="{{ url_for('static', filename='/js/displayGallery.js') }}"></script>
 <script>
     initGallery("favorites", ["new", "resale"], {"new": "No new images", "resale": "No resale images"}, {"new": "bid", "resale": "buy" });
 
     let socket = io();
-    socket.on('connect', function () {
-        console.log("Connected!")
-    });
     socket.on('new', function (msg) {
         try {
             document.querySelector("#picture-" + msg[1] + " .picture-bid").setAttribute("value", msg[0]);

@@ -365,7 +365,7 @@ follow button
 
 ******/
 
-button.follow-button.wait {
+button.wait {
     pointer-events: none;
 }
 
@@ -391,6 +391,10 @@ Gallery: Picture
     justify-content: center;
     margin: auto;
     width: 87%;
+}
+
+.images-gallery p {
+    margin-top: 10%;
 }
 
 .images-gallery-nav {
@@ -616,7 +620,7 @@ Market
     border: 1px solid #ddd;
 }
 
-#market form {
+#market #create-form {
     display: grid;
     grid-template-columns: auto auto;
     grid-auto-rows: 34px;
@@ -624,28 +628,28 @@ Market
 }
 
 
-#market.preview form {
+#market.preview #create-form {
     grid-template-columns: auto auto auto;
 }
 
-#market form > * {
+#market #create-form > * {
     margin: 5px;
     max-width: 300px;
 }
 
 
-#market form > input {
+#market #create-form > input {
     width: 150px;
     grid-column: 2;
 }
 
-#market form > .file-selector-styled {
+#market #create-form > .file-selector-styled {
     grid-column: span 2;
     justify-self: center;
     text-align: center;
 }
 
-#market form > .file-selector-styled input {
+#market #create-form > .file-selector-styled input {
     opacity: 0;
     z-index: -1;
     position: absolute;
@@ -653,16 +657,16 @@ Market
     height: 0px;
 }
 
-#market form > .file-selector-styled label {
+#market #create-form > .file-selector-styled label {
     color: var(--lead-color);
     font-weight: bolder;
 }
 
-#market form > img {
+#market #create-form > img {
     display: none;
 }
 
-#market.preview form > img {
+#market.preview #create-form > img {
     display: initial;
     grid-column: 3;
     grid-row: 1 span 5;
@@ -671,22 +675,22 @@ Market
     max-width: 250px;
 }
 
-#market form > label {
+#market #create-form > label {
     justify-self: right;
     grid-column: 1;
 }
 
-#market form > label.switch {
+#market #create-form > label.switch {
     justify-self: left;
     grid-column: 2;
 }
 
-#market form > button {
+#market #create-form > button {
     grid-column: span 2;
     justify-self: center;
 }
 
-#market.preview form > button {
+#market.preview #create-form > button {
     grid-column: span 3;
 }
 
@@ -796,16 +800,16 @@ Account
     grid-area: page;
     display: grid;
     grid-template-columns: 120px auto;
-    gap: 2px 30px;
+    gap: 6px 30px;
     margin: 20px 0px;
 }
 
-#parameters button {
+#parameters > button {
     margin-top: 30px;
     grid-column-start: span 2;
 } 
 
-#parameters label {
+#parameters > label {
     text-align: right;
     font-weight: bolder;
 }
@@ -1049,6 +1053,10 @@ input:checked + .slider .nsfw {
     opacity: 1;
 }
 
+#parameters .nsfw {
+    left: -5px;
+}
+
 /*******
 Fat button
 ****/
@@ -1132,31 +1140,44 @@ https://loading.io/css/
     text-align: justify;
 }
 
+
+@keyframes tooltip-appear {
+    0% { top: -45px;
+    }
+    100% {
+        top: 0px;
+    }
+  }
+
 .tooltip {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    background-color: rgb(253, 253, 253);
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background-color: rgba(190, 190, 190, 0.8);
     border-radius: 5px;
-    padding: 50px;
-    transform: translate(-50%, -50%);
+    padding: 7px 50px;
     border: 1px solid var(--outline-color);
+    animation: tooltip-appear 0.5s;
 }
 
 .tooltip-title {
+    display: inline;
+    margin-right: 11px;
     position: relative;
-    font-size: xx-large;
+    font-size: x-large;
     font-weight: bold;
     color: var(--lead-color);
     margin-bottom: 14px;
 }
 
 .tooltip-title button {
+    left: -42px;
     font-size: x-large;
     position: absolute;
     right: 5px;
 }
 
 .tooltip-body {
+    display: inline;
     color: var(--dark-base-color);
 }

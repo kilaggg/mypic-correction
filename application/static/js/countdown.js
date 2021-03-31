@@ -1,5 +1,4 @@
 function createCountdown(initialDate, countdown) {
-    console.log(initialDate);
     var countDownDate = new Date(initialDate).getTime();
     var x = setInterval(function () {
         var now = localDateToUTC(new Date()).getTime();

@@ -1,7 +1,6 @@
 function objectToParam(object) {
     // Turn the data object into an array of URL-encoded key/value pairs.
     let urlEncodedData = "", urlEncodedDataPairs = [];
-    console.log(Object.keys(object))
     for (let i = 0; i < Object.keys(object).length; i++) {
         urlEncodedDataPairs.push(encodeURIComponent(Object.keys(object)[i]) + '=' + encodeURIComponent(object[Object.keys(object)[i]]));
     }

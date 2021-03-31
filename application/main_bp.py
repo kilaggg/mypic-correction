@@ -336,9 +336,11 @@ def market() -> str:
             end_date = datetime.utcnow() + timedelta(hours=int(request.form['duration']))
             public = 0 if 'private' in request.form else 1
             nsfw = 1 if 'nsfw' in request.form else 0
-            create_new_image(username, file, title, price, end_date, public, nsfw)
-            return redirect(url_for('main.gallery'))
-        flash(error)
+            token_id = create_new_image(username, file, title, price, end_date, public, nsfw)
+            return json.dumps({'status': 200,
+                               'token_id': token_id})
+        return json.dumps({'status': 404,
+                               'e': error})
     return render_template('app/create.html')
 
 

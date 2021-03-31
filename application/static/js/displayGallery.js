@@ -194,7 +194,7 @@ function displayImage(page, image, type) {
 function displayMore(images, page) {
     if (images.length == 0) {
         if (!displayedFirst[page]) {
-            document.getElementById(page + "_div").innerText = Errors[page];
+            document.getElementById(page + "_div").innerHTML = "<p>" + Errors[page] + "</p>" ;
         }
         endPage[page] = true;
         return;

@@ -29,12 +29,10 @@
 </div>
 <script src="https://cdn.socket.io/3.1.1/socket.io.min.js" integrity="sha384-gDaozqUvc4HTgo8iZjwth73C6dDDeOJsAgpxBcMpZYztUfjHXpzrpdrHRdVp8ySO" crossorigin="anonymous"></script>
 <script src="{{ url_for('static', filename='/js/countdown.js') }}"></script>
-<script src="{{ url_for('static', filename='/js/algo.js') }}"></script>
 <script src="{{ url_for('static', filename='/js/bid_buy.js') }}"></script>
 <script src="{{ url_for('static', filename='/js/displayGallery.js') }}"></script>
 <script>
     let USERNAME = window.location.href.split("gallery")[1];
-    console.log("gallery" + USERNAME);
     initGallery("gallery" + USERNAME, ["my-pics", "my-sell", "my-resale"], {"my-pics": "They do not have images.", "my-sell": "They have no sell", "my-sell": "They have no resale" }, {"my-pics": "", "my-sell": "bid", "my-resale": "buy" });
 
     document.getElementById("follow-button").addEventListener("click", () => {

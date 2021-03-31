@@ -105,7 +105,7 @@ def cancel_resale(token_id: int) -> bool:
 
 
 def create_new_image(username: str, file: FileStorage, title: str, price: int, end_date: datetime, is_public: int,
-                     is_nsfw: int) -> None:
+                     is_nsfw: int) -> int:
     extension = DICTIONARY_FORMAT[secure_filename(file.filename).split('.')[-1].lower()]
     swarm_hash_all = upload_image_swarm(file, username, is_public)
     swarm_hash = swarm_hash_all[:64]
@@ -126,6 +126,7 @@ def create_new_image(username: str, file: FileStorage, title: str, price: int, e
     query = f"INSERT INTO {SCHEMA}.{NEW_SELL_TABLE_NAME} " \
             f"(token_id, start_price, current_price, end_date) VALUES ({token_id}, {price}, {price}, '{end_date}')"
     SqlManager().execute_query(query, True)
+    return token_id
 
 
 def create_resale(username: str, token_id: int, price: int, tx_id: str) -> None:
@@ -171,6 +172,10 @@ def get_data_from_token_id(token_ids: list):
 
 def get_image_from_address(address: str, page: int, my: bool) -> list:
     token_ids = list_account_assets(address)
+    # TODO : remove token id not in DB
+    query = f"SELECT token_id FROM {SCHEMA}.{TOKEN_TABLE_NAME}"
+    mypic_token = SqlManager().query_df(query)["token_id"].to_list()
+    token_ids = [x for x in token_ids if x in mypic_token]
     if len(token_ids) > 0:
         df = get_data_from_token_id(token_ids)
         df = df.loc[page * NUMBER_PRINT_IMAGE:(page + 1) * NUMBER_PRINT_IMAGE - 1]

@@ -1,9 +1,13 @@
 function addTooltip(title, text, autoClose = false) {
+    try {
+        document.querySelector(".tooltip").remove();
+    } catch (error) {
+        
+    }
     let tooltip = document.createElement("div");
     tooltip.classList.add("tooltip");
     document.body.appendChild(tooltip);
 
-    console.log(tooltip);
     let tooltipTitle = document.createElement("div");
     tooltipTitle.classList.add("tooltip-title");
     if (title != "") tooltipTitle.innerText = title;
@@ -11,13 +15,13 @@ function addTooltip(title, text, autoClose = false) {
 
     let tooltipBody = document.createElement("div");
     tooltipBody.classList.add("tooltip-body");
-    if (text != "") tooltipBody.innerText = text;
+    if (text != "" && text != undefined) tooltipBody.innerText = text;
     tooltip.appendChild(tooltipBody);
 
     if (autoClose) {
         setTimeout(() => {
             tooltip.remove();
-        }, 1500);
+        }, 2600);
     } else {
         let closeButton = document.createElement("button");
         closeButton.innerText = "X";
