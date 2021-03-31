@@ -9,7 +9,7 @@ import os
 app.register_blueprint(auth_bp.bp)
 app.register_blueprint(main_bp.bp)
 app.register_blueprint(help_bp.bp)
-app.secret_key = os.environ['secret_key'].encode('utf8')
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 app.debug = True
 app.config["JWT_TOKEN_LOCATION"] = ["cookies"]
 app.config["JWT_BLACKLIST_ENABLED"] = True
