@@ -43,8 +43,9 @@ def build_image_favorites(star: str) -> dict:
     return image
 
 
-def build_image_gallery(row: Series, my: bool) -> dict:
-    container = IMAGES_CONTAINER if row['is_public'] or my else BLURRY_IMAGES_CONTAINER
+def build_image_gallery(row: Series, my: bool, nsfw: bool) -> dict:
+    nsfw = nsfw or not bool(row['is_nsfw'])
+    container = IMAGES_CONTAINER if (row['is_public'] or my) and nsfw else BLURRY_IMAGES_CONTAINER
     extension = row['extension']
     image_path = f"{row['username'].lower()}/{row['swarm_hash']}.{extension}"
     pp_extension = row['profile_picture_extension']
@@ -58,8 +59,9 @@ def build_image_gallery(row: Series, my: bool) -> dict:
     return image
 
 
-def build_new_image(row: Series, my: bool) -> dict:
-    container = IMAGES_CONTAINER if row['is_public'] or my else BLURRY_IMAGES_CONTAINER
+def build_new_image(row: Series, my: bool, nsfw: bool) -> dict:
+    nsfw = nsfw or not bool(row['is_nsfw'])
+    container = IMAGES_CONTAINER if (row['is_public'] or my) and nsfw else BLURRY_IMAGES_CONTAINER
     extension = row['extension']
     image_path = f"{row['username'].lower()}/{row['swarm_hash']}.{extension}"
     pp_extension = row['profile_picture_extension']
@@ -76,8 +78,9 @@ def build_new_image(row: Series, my: bool) -> dict:
     return image
 
 
-def build_resale_images(row: Series, my: bool) -> dict:
-    container = IMAGES_CONTAINER if row['is_public'] or my else BLURRY_IMAGES_CONTAINER
+def build_resale_images(row: Series, my: bool, nsfw: bool) -> dict:
+    nsfw = nsfw or not bool(row['is_nsfw'])
+    container = IMAGES_CONTAINER if (row['is_public'] or my) and nsfw else BLURRY_IMAGES_CONTAINER
     extension = row['extension']
     image_path = f"{row['creator'].lower()}/{row['swarm_hash']}.{extension}"
     pp_extension = row['profile_picture_extension']
@@ -161,7 +164,7 @@ def execute_buy(token_id):
 
 def get_data_from_token_id(token_ids: list):
     query = f"SELECT {SCHEMA}.{TOKEN_TABLE_NAME}.username, extension, swarm_hash, title, token_id, Token.is_public, " \
-            f"profile_picture_extension " \
+            f"profile_picture_extension, is_nsfw " \
             f"FROM {SCHEMA}.{TOKEN_TABLE_NAME} " \
             f"LEFT JOIN {SCHEMA}.{ACCOUNT_TABLE_NAME} " \
             f"ON {SCHEMA}.{TOKEN_TABLE_NAME}.username = {SCHEMA}.{ACCOUNT_TABLE_NAME}.username " \
@@ -170,9 +173,8 @@ def get_data_from_token_id(token_ids: list):
     return df
 
 
-def get_image_from_address(address: str, page: int, my: bool) -> list:
+def get_image_from_address(address: str, page: int, my: bool, nsfw: bool) -> list:
     token_ids = list_account_assets(address)
-    # TODO : remove token id not in DB
     query = f"SELECT token_id FROM {SCHEMA}.{TOKEN_TABLE_NAME}"
     mypic_token = SqlManager().query_df(query)["token_id"].to_list()
     token_ids = [x for x in token_ids if x in mypic_token]
@@ -180,12 +182,12 @@ def get_image_from_address(address: str, page: int, my: bool) -> list:
         df = get_data_from_token_id(token_ids)
         df = df.loc[page * NUMBER_PRINT_IMAGE:(page + 1) * NUMBER_PRINT_IMAGE - 1]
         num_cores = multiprocessing.cpu_count()
-        images = Parallel(n_jobs=num_cores)(delayed(build_image_gallery)(row, my) for _, row in df.iterrows())
+        images = Parallel(n_jobs=num_cores)(delayed(build_image_gallery)(row, my, nsfw) for _, row in df.iterrows())
         return images
     return []
 
 
-def get_new_images(page: int, username: str = None, email: str = None, follower: str = None, my: bool = False) -> list:
+def get_new_images(page: int, nsfw: bool, username: str = None, email: str = None, follower: str = None, my: bool = False) -> list:
     query = f"SELECT * FROM {SCHEMA}.{NEW_SELL_VIEW_NAME}"
     if follower is not None:
         query += f" WHERE username in (SELECT star FROM [dbo].[FollowersView] WHERE follower='{follower}')"
@@ -198,11 +200,11 @@ def get_new_images(page: int, username: str = None, email: str = None, follower:
     df.reset_index(inplace=True)
     df = df.loc[page * NUMBER_PRINT_IMAGE:(page + 1) * NUMBER_PRINT_IMAGE - 1]
     num_cores = multiprocessing.cpu_count()
-    new_images = Parallel(n_jobs=num_cores)(delayed(build_new_image)(row, my) for _, row in df.iterrows())
+    new_images = Parallel(n_jobs=num_cores)(delayed(build_new_image)(row, my, nsfw) for _, row in df.iterrows())
     return new_images
 
 
-def get_resale(page: int, username: str = None, email: str = None, follower: str = None, my: bool = False) -> list:
+def get_resale(page: int, nsfw: bool, username: str = None, email: str = None, follower: str = None, my: bool = False) -> list:
     query = f"SELECT * FROM {SCHEMA}.{RESELL_VIEW_NAME}"
     if follower is not None:
         query += f" WHERE username in (SELECT star FROM [dbo].[FollowersView] WHERE follower='{follower}')"
@@ -215,7 +217,7 @@ def get_resale(page: int, username: str = None, email: str = None, follower: str
     df.reset_index(inplace=True)
     df = df.loc[page * NUMBER_PRINT_IMAGE:(page + 1) * NUMBER_PRINT_IMAGE - 1]
     num_cores = multiprocessing.cpu_count()
-    resale_images = Parallel(n_jobs=num_cores)(delayed(build_resale_images)(row, my) for _, row in df.iterrows())
+    resale_images = Parallel(n_jobs=num_cores)(delayed(build_resale_images)(row, my, nsfw) for _, row in df.iterrows())
     return resale_images
 
 
@@ -227,20 +229,20 @@ def upload_image_swarm(file: FileStorage, username: str, is_public) -> (str, str
     else:
         headers = {"content-type": f"image/{image_format}", "Swarm-Encrypt": "true"}
     result = requests.post(url, data=file, headers=headers)
-    # swarm_hash = json.loads(result.content.decode('utf8'))["reference"]
-    swarm_hash = result.content.decode('utf8')
+    swarm_hash = json.loads(result.content.decode('utf8'))["reference"]
+    # swarm_hash = result.content.decode('utf8')
     image = Image.open(file)
     output = io.BytesIO()
     image.save(output, format=image_format)
     hex_data = output.getvalue()
     blob_client = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, IMAGES_CONTAINER,
-                                                    f"{username.lower()}/{swarm_hash}.{image_format}")
+                                                    f"{username.lower()}/{swarm_hash[:64]}.{image_format}")
     blob_client.upload_blob(hex_data, overwrite=True)
     blurry_image = Image.open(file).filter(ImageFilter.BoxBlur(30))
     blurry_output = io.BytesIO()
     blurry_image.save(blurry_output, format=image_format)
     blurry_hex_data = blurry_output.getvalue()
     blurry_blob_client = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, BLURRY_IMAGES_CONTAINER,
-                                                           f"{username.lower()}/{swarm_hash}.{image_format}")
+                                                           f"{username.lower()}/{swarm_hash[:64]}.{image_format}")
     blurry_blob_client.upload_blob(blurry_hex_data, overwrite=True)
     return swarm_hash

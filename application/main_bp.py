@@ -124,10 +124,11 @@ def feed() -> str:
     if request.method == 'POST':
         if "more" in request.form:
             email = get_jwt_identity()['email']
+            nsfw = get_nsfw_from_email(email)
             username = get_jwt_identity()['username']
             follower = None if request.endpoint == 'main.v2' else username
             if request.form["more"] == "new":
-                data_new_images = get_new_images(session.get(f'{page}_number_new'), email=email, follower=follower)
+                data_new_images = get_new_images(session.get(f'{page}_number_new'), nsfw, email=email, follower=follower)
                 session[f'{page}_number_new'] = session.get(f'{page}_number_new') + 1
                 return json.dumps({"pictures": data_new_images})
 
@@ -157,14 +158,15 @@ def gallery() -> str:
         email = get_jwt_identity()['email']
         address = get_address_from_email(email)
         username = get_jwt_identity()['username']
+        nsfw = get_nsfw_from_email(email)
         if "more" in request.form:
             if request.form["more"] == "my-pics":
-                data_my_gallery = get_image_from_address(address, session.get('number_my_gallery'), my=True)
+                data_my_gallery = get_image_from_address(address, session.get('number_my_gallery'), True, nsfw)
                 session['number_my_gallery'] = session.get('number_my_gallery') + 1
                 return json.dumps({"pictures": data_my_gallery})
 
             if request.form["more"] == "my-sell":
-                data_new_images = get_new_images(session.get('number_my_new_image'), username=username, my=True)
+                data_new_images = get_new_images(session.get('number_my_new_image'), nsfw, username=username, my=True)
                 session['number_my_new_image'] = session.get('number_my_new_image') + 1
                 return json.dumps({"pictures": data_new_images})
 
@@ -243,14 +245,16 @@ def gallery_navigation(username: str) -> str:
     if request.method == 'POST':
         is_public = get_is_public_from_username(username)
         if "more" in request.form:
+            email = get_jwt_identity()['email']
+            nsfw = get_nsfw_from_email(email)
             address = get_address_from_username(username)
             if request.form["more"] == "my-pics":
-                data_my_gallery = get_image_from_address(address, session.get('number_other_gallery'), is_public)
+                data_my_gallery = get_image_from_address(address, session.get('number_other_gallery'), is_public, nsfw)
                 session['number_other_gallery'] = session.get('number_other_gallery') + 1
                 return json.dumps({"pictures": data_my_gallery})
 
             if request.form["more"] == "my-sell":
-                data_new_images = get_new_images(session.get('number_other_new_image'), username=username)
+                data_new_images = get_new_images(session.get('number_other_new_image'), nsfw, username=username)
                 session['number_other_new_image'] = session.get('number_other_new_image') + 1
                 return json.dumps({"pictures": data_new_images})
 
