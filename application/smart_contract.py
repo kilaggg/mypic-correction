@@ -56,7 +56,6 @@ def mint_official_nft(swarm_hash: str, is_public: bool, username: str, title: st
     params = algod_client.suggested_params()
     params.fee = 1000
     params.flat_fee = True
-
     data_set = {"is_public": f'{is_public}', 'username': username, 'title': title, 'number': f'{number}'}
 
     tx_note_json_str = json.dumps(data_set)

@@ -133,7 +133,7 @@ def feed() -> str:
                 return json.dumps({"pictures": data_new_images})
 
             if request.form["more"] == "resale":
-                resale_images = get_resale(session.get(f'{page}_number_resale'), email=email, follower=follower)
+                resale_images = get_resale(session.get(f'{page}_number_resale'), nsfw, email=email, follower=follower)
                 session[f'{page}_number_resale'] = session.get(f'{page}_number_resale') + 1
                 return json.dumps({"pictures": resale_images})
 
@@ -171,7 +171,7 @@ def gallery() -> str:
                 return json.dumps({"pictures": data_new_images})
 
             if request.form["more"] == "my-resale":
-                resale_images = get_resale(session.get('number_my_resale'), username=username, my=True)
+                resale_images = get_resale(session.get('number_my_resale'), nsfw, username=username, my=True)
                 session['number_my_resale'] = session.get('number_my_resale') + 1
                 return json.dumps({"pictures": resale_images})
 
@@ -259,7 +259,7 @@ def gallery_navigation(username: str) -> str:
                 return json.dumps({"pictures": data_new_images})
 
             if request.form["more"] == "my-resale":
-                resale_images = get_resale(session.get('number_other_resale'), username=username)
+                resale_images = get_resale(session.get('number_other_resale'), nsfw, username=username)
                 session['number_other_resale'] = session.get('number_other_resale') + 1
                 return json.dumps({"pictures": resale_images})
 
@@ -300,6 +300,7 @@ def gallery_navigation(username: str) -> str:
 @bp.route('/create', methods=('GET', 'POST'))
 @jwt_required
 def market() -> str:
+    email = get_jwt_identity()['email']
     if request.method == 'POST' and 'create' in request.form:
         error = None
         if 'file' not in request.files:
@@ -333,6 +334,10 @@ def market() -> str:
         if secure_filename(request.files['file'].filename).split('.')[-1].lower() not in DICTIONARY_FORMAT:
             error = f"We only accept format in : {','.join(list(DICTIONARY_FORMAT.keys()))}"
 
+        address = get_address_from_email(email)
+        if address is None:
+            error = "We need an address to create an Image. Go to 'Account' to link an Algo Address"
+
         if error is None:
             username = get_jwt_identity()['username']
             file = request.files['file']
@@ -344,23 +349,6 @@ def market() -> str:
             token_id = create_new_image(username, file, title, price, end_date, public, nsfw)
             return json.dumps({'status': 200,
                                'token_id': token_id})
-        return json.dumps({'status': 404, 'e': error})
-
-    if request.method == 'POST' and 'validate' in request.form:
-        error = None
-        if 'token_id' not in request.form:
-            error = "Token ID is required."
-        if 'address' not in request.form:
-            error = "Address ID is required."
-        try:
-            int(request.form['token_id'])
-        except ValueError:
-            error = "Enter an integer for Token ID."
-        if error is None:
-            address = request.form['address']
-            email = get_jwt_identity()['email']
-            update_address(email, address)
-            return "Address confirmed."
         return json.dumps({'status': 404, 'e': error})
     return render_template('app/create.html')
 

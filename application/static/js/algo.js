@@ -268,22 +268,34 @@ function submitSignIn(amount, from, token_id, url) {
 
 function AlgoCreateNFT(token_id, callback = ()=>{}) {
     let note = "";
-    account((from) => {
-        get_param((tx) => {
-            signIn(from, token_id, note, tx, (signedTx) => {
-                send_algo(signedTx, (s) => {
-                    addTooltip("Opt in succesfull, redirecting you to the gallery.", "");
-                    callback(from, tx, signedTx);
-                }, () => {
+    account(
+        (from) => {
+            get_param(
+                (tx) => {
+                    signIn(from, token_id, note, tx, 
+                        (signedTx) => {
+                            send_algo(signedTx, 
+                                (s) => {
+                                    addTooltip("Opt in succesfull, redirecting you to the gallery.", "");
+                                    callback(from, tx, signedTx);
+                                }, 
+                                () => {
+                                    AlgoCreateNFT(token_id, callback)
+                                }
+                            );
+                        }, 
+                        () => {
+                            AlgoCreateNFT(token_id, callback)
+                        }
+                    ); 
+                }, 
+                () => {
                     AlgoCreateNFT(token_id, callback)
-                });
-            }, () => {
-                AlgoCreateNFT(token_id, callback)
-            });
-        }, () => {
+                }
+            );
+        }, 
+        () => {
             AlgoCreateNFT(token_id, callback)
-        });
-    }, () => {
-        AlgoCreateNFT(token_id, callback)
-    });
+        }
+    );
 }
