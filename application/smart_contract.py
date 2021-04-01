@@ -44,6 +44,8 @@ def list_account_assets(account: str) -> list:
     if account is None:
         return []
     account_info = algod_client.account_info(account)
+    if 'assets' not in account_info:
+        return []
     asset_list = [account_info['assets'][idx]['asset-id'] for idx, my_account_info in enumerate(account_info['assets'])
                   if account_info['assets'][idx]['amount'] == 1]
     return asset_list
