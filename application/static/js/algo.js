@@ -1,4 +1,5 @@
 const LEDGER = 'MainNet';
+const ADDRESS = "HKDGSHRLJJLQP463PPTGIRQWMSPOIWR5CGAOCKOHOEH3WEU44SEYIDHPR4";
 
 function connect(callback = () => {}) {
     if (typeof AlgoSigner === 'undefined') {
@@ -157,8 +158,7 @@ function setupTX(from, txParams, token_id, callback=() => {}) {
     let txn = {
         type: 'axfer',
         from: from,
-        to: 
-        "HKDGSHRLJJLQP463PPTGIRQWMSPOIWR5CGAOCKOHOEH3WEU44SEYIDHPR4",
+        to: ADDRESS,
         fee: txParams['fee'],
         firstRound: txParams['last-round'],
         lastRound: txParams['last-round'] + 1000,

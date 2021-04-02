@@ -230,7 +230,7 @@ def update_nsfw(email: str, nsfw: int) -> None:
 def update_profile_picture(username: str, data: FileStorage, extension: str) -> None:
     blob_client = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, PROFILE_PICTURES_CONTAINER,
                                                     f"{username.lower()}.{extension}")
-    blob_client.upload_blob(data)
+    blob_client.upload_blob(data, overwrite=True)
     query = f"UPDATE {SCHEMA}.{ACCOUNT_TABLE_NAME} SET profile_picture_extension='{extension}' " \
             f"WHERE username='{username}'"
     SqlManager().execute_query(query, True)

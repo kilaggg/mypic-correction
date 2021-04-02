@@ -3,7 +3,6 @@ from application.user import jti_in_blacklist
 from datetime import datetime, timedelta, timezone
 from flask import flash, redirect, url_for
 from flask_jwt_extended import create_access_token, get_jwt_identity, get_raw_jwt, JWTManager, set_access_cookies
-import os
 
 
 app.register_blueprint(auth_bp.bp)
