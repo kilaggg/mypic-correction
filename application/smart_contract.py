@@ -52,7 +52,7 @@ def list_account_assets(account: str) -> list:
 
 
 def mint_official_nft(swarm_hash: str, is_public: bool, username: str, title: str, number: int,
-                      asset_symbol: str = 'MYPIC', asset_name: str = 'MyPic NFT', website_url: str = 'http://mypic.io'):
+                      asset_symbol: str = 'MYPIC', asset_name: str = 'MyPic', website_url: str = 'http://mypic.io'):
     params = algod_client.suggested_params()
     params.fee = 1000
     params.flat_fee = True
@@ -61,6 +61,7 @@ def mint_official_nft(swarm_hash: str, is_public: bool, username: str, title: st
     tx_note_json_str = json.dumps(data_set)
     tx_note_bytes = tx_note_json_str.encode("utf-8")
     swarm_hash_bytes = unhexlify(swarm_hash)
+    asset_name = f"MyPic {username} {title}"[:38]
     txn = AssetConfigTxn(sender=accounts[1]['pk'],
                          sp=params,
                          total=1,
