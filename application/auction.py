@@ -27,7 +27,7 @@ def manage_auction(form, username):
         token_id = int(form['token_id'])
         price = int(form['price'])
         if form['type'] == 'new':
-            if price < 1:
+            if price < int(get_current_price_from_token_id(token_id) * 1.1) + 1:
                 return json.dumps({"status": 404, 'e': 'Price is not enough'})
             if token_id in dict_bid and dict_bid[token_id][0] + timedelta(minutes=3) > datetime.utcnow():
                 return json.dumps({"status": 404, 'e': 'Someone process a bid, retry in few seconds'})
