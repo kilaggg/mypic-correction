@@ -1,4 +1,4 @@
-from application import dict_bid, socketio
+from application import dict_bid#, socketio
 from application.constants import *
 from application.market import execute_bid
 from application.user import get_current_price_from_token_id, get_previous_bidder
@@ -56,7 +56,7 @@ def manage_auction(form, username):
                         old_address = get_previous_bidder(token_id)
                         execute_bid(token_id, price, address)
                         dict_bid.pop(token_id, None)
-                        socketio.emit("new", data=[str(int(price * 1.1) + 1), token_id])
+                        # socketio.emit("new", data=[str(int(price * 1.1) + 1), token_id])
                         if old_address is not None:
                             tx_id = transfer_algo_to_user(old_address, old_price * 1000000)
                             if verify_buy_transaction(tx_id):

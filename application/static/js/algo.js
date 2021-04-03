@@ -46,7 +46,7 @@ function get_param(callback = (txParams) => { }, errorCallback = () => { }) {
     })
     .catch((e) => {
         errorCallback();
-        console.error(e);
+        //console.error(e);
         addTooltip("Failed to get the parameters for the transaction", "Please retry the transaction. If the problem persits, send us an email.");
     });
 }
@@ -70,7 +70,7 @@ function pay(from, to, amount, note, txParams, callback = (status) => { }, error
     })
     .catch((e) => {
         errorCallback();
-        console.error(e);
+        //console.error(e);
         addTooltip("Failed to create the transaction", "Please retry. If the problem persits, send us an email.");
     });
 }
@@ -81,10 +81,10 @@ function get_status(txID) {
         path: '/v2/transactions/pending/' + txID
     })
         .then((d) => {
-            console.log(d);
+            //console.log(d);
         })
         .catch((e) => {
-            console.error(e);
+            //console.error(e);
         });
 }
 
@@ -97,7 +97,7 @@ function send_algo(signedTx, callback = (status) => { }, errorCallback = () => {
         callback(d);
     })
     .catch((e) => {
-        console.error(e);
+        //console.error(e);
         errorCallback();
     });
 }
@@ -185,7 +185,7 @@ function AlgoTransferAsset(token_id, price, url) {
                     })
                     .catch((e) => {
                         addTooltip("Failed to create the transaction", "Please retry. If the problem persits, send us an email.");
-                        console.error(e);
+                        //console.error(e);
                     });
             });
         });
@@ -231,7 +231,7 @@ function signIn(from, token_id, note, txParams, callback = () => {}, errorCallba
             callback(d);
         })
         .catch((e) => {
-            console.error(e);
+            //console.error(e);
             errorCallback(e);
         });
 }

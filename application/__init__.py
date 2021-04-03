@@ -1,12 +1,12 @@
 from algosdk import mnemonic
 from algosdk.v2client import algod
 from flask import Flask
-from flask_socketio import SocketIO
+# from flask_socketio import SocketIO
 import os
 
 
 app = Flask(__name__)
-socketio = SocketIO(app, logger=False, engineio_logger=False)
+# socketio = SocketIO(app, logger=False, engineio_logger=False)
 dict_bid = {}
 dict_buy = {}
 

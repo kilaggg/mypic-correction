@@ -82,6 +82,7 @@ def account() -> str:
                     error = "Fullname should contains only letters, numbers and spaces"
                 if error is None:
                     update_fullname(email, request.form['fullname'])
+                    return "Fullname Updated"
                 flash(error)
                 return error
 
@@ -99,6 +100,7 @@ def account() -> str:
                     error = "Wrong Password."
                 if error is None:
                     update_password(email, new_password)
+                    return "Password Updated"
                 return error
             return render_template('app/account.html', user=user)
 
@@ -301,6 +303,7 @@ def gallery_navigation(username: str) -> str:
 @jwt_required
 def market() -> str:
     email = get_jwt_identity()['email']
+    print(request.form)
     if request.method == 'POST' and 'create' in request.form:
         error = None
         if 'file' not in request.files:

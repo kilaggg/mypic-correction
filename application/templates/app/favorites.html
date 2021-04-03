@@ -20,13 +20,13 @@
     </div>
 </div>
 
-<script src="{{ url_for('static', filename='/js/socket.io.min.js') }}"></script>
+<!--<script src="{{ url_for('static', filename='/js/socket.io.min.js') }}"></script>-->
 <script src="{{ url_for('static', filename='/js/countdown.js') }}"></script>
 <script src="{{ url_for('static', filename='/js/bid_buy.js') }}"></script>
 <script src="{{ url_for('static', filename='/js/displayGallery.js') }}"></script>
 <script>
     initGallery("favorites", ["new", "resale"], {"new": "No new images", "resale": "No resale images"}, {"new": "bid", "resale": "buy" });
-
+/*
     let socket = io();
     socket.on('new', function (msg) {
         try {
@@ -45,6 +45,6 @@
             
         } catch (error) {
         }
-    });
+    });*/
 </script>
 {% endblock %}
