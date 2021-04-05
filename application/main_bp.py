@@ -372,6 +372,6 @@ def wallet_installed():
     return error
 
 
-@bp.route('/ico', methods=('GET', 'POST'))
-def ico():
-    return render_template('app/ico.html')
+# @bp.route('/ico', methods=('GET', 'POST'))
+# def ico():
+#     return render_template('app/ico.html')
