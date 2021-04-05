@@ -1,10 +1,9 @@
-from application import dict_bid#, socketio
-from application.constants import *
+from application import ADDRESS_ALGO_OURSELF, dict_bid#, socketio
 from application.market import execute_bid
+from application.smart_contract import transfer_algo_to_user, verify_bid_transaction, verify_buy_transaction
 from application.user import get_current_price_from_token_id, get_previous_bidder
 from datetime import datetime, timedelta
 from flask import redirect, url_for
-from application.smart_contract import transfer_algo_to_user, verify_bid_transaction, verify_buy_transaction
 import json
 
 

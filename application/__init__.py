@@ -22,3 +22,4 @@ CONNECTION_STRING = os.environ["database_conn"]
 BLOB_CONNECTION_STRING = os.environ["blob_conn"]
 LOGIC_APP_MAIL_URL = os.environ["insight_url"]
 SWARM_URL_NODE = os.environ["swarm_node"]
+ADDRESS_ALGO_OURSELF = mnemonic.to_public_key(WORD_MNEMONIC)

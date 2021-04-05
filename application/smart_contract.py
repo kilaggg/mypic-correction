@@ -1,8 +1,7 @@
 from algosdk import mnemonic, template
 from algosdk.error import AlgodHTTPError
 from algosdk.future.transaction import AssetConfigTxn, AssetTransferTxn, PaymentTxn
-from application import accounts, algod_client, WORD_MNEMONIC
-from application.constants import *
+from application import accounts, ADDRESS_ALGO_OURSELF, algod_client, WORD_MNEMONIC
 from binascii import unhexlify
 import base64
 import json
@@ -52,7 +51,7 @@ def list_account_assets(account: str) -> list:
 
 
 def mint_official_nft(swarm_hash: str, is_public: bool, username: str, title: str, number: int,
-                      asset_symbol: str = 'MYPIC', asset_name: str = 'MyPic', website_url: str = 'http://mypic.io'):
+                      asset_symbol: str = 'MYPIC', website_url: str = 'http://mypic.io'):
     params = algod_client.suggested_params()
     params.fee = 1000
     params.flat_fee = True

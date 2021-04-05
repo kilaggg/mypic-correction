@@ -19,14 +19,14 @@ function bid(token_id, price, url) {
 
 function buy(token_id, price, url) {
     let bidPrice = parseInt(price.innerText);
-    addTooltip("Buy in in progress, wait a minute", "");
+    addTooltip("Buy in progress, wait a minute", "");
     AlgoSignIn(bidPrice, token_id, url);
 }
 
 function sell(token_id, price, url) {
     let bidPrice = price.value;
     if (isNaN(bidPrice)) {
-        addTooltip("Input a price to sell the picture");
+        addTooltip("Price is required to sell the picture");
         return;
     }
     addTooltip("Sell in progress, wait a minute", "");
@@ -34,7 +34,7 @@ function sell(token_id, price, url) {
 }
 
 function cancel(token_id, url) {
-    addTooltip("Cancelation of  " + token_id + " in process");
+    addTooltip("Cancellation of " + token_id + " sale in process");
     var http = new XMLHttpRequest();
     http.open('POST', "/" + url, true);
     http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');

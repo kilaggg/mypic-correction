@@ -1,4 +1,4 @@
-from application import BLOB_CONNECTION_STRING, SWARM_URL_NODE
+from application import ADDRESS_ALGO_OURSELF, BLOB_CONNECTION_STRING, SWARM_URL_NODE
 from application.constants import *
 from application.sql_manager import SqlManager
 from application.smart_contract import (
@@ -231,7 +231,6 @@ def upload_image_swarm(file: FileStorage, username: str, is_public) -> (str, str
     import time
     a = time.time()
     result = requests.post(url, data=file, headers=headers)
-    print(time.time() - a)
     swarm_hash = json.loads(result.content.decode('utf8'))["reference"]
     # swarm_hash = result.content.decode('utf8')
     image = Image.open(file)

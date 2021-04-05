@@ -47,7 +47,7 @@ function get_param(callback = (txParams) => { }, errorCallback = () => { }) {
     .catch((e) => {
         errorCallback();
         //console.error(e);
-        addTooltip("Failed to get the parameters for the transaction", "Please retry the transaction. If the problem persits, send us an email.");
+        addTooltip("Failed to get the parameters for the transaction", "Please retry the transaction. If the problem persists, send us an email.");
     });
 }
 
@@ -71,7 +71,7 @@ function pay(from, to, amount, note, txParams, callback = (status) => { }, error
     .catch((e) => {
         errorCallback();
         //console.error(e);
-        addTooltip("Failed to create the transaction", "Please retry. If the problem persits, send us an email.");
+        addTooltip("Failed to create the transaction", "Please retry. If the problem persists, send us an email.");
     });
 }
 
@@ -128,14 +128,14 @@ function submitTransaction(amount, from, token_id, url, txID, type) {
     http.onreadystatechange = function () {//Call a function when the state changes.
         if (http.readyState == 4 && http.status == 200) {
             if (type == "validate_resale") {
-                addTooltip("Buy successfull", "You bought Token ID " + token_id + " for " + (amount / 1000000) + " algo");
+                addTooltip("Buy: successful", "You bought Token ID " + token_id + " for " + (amount / 1000000) + " ALGO");
                 try {
                     document.getElementById("picture-" + token_id).remove();
                 } catch (error) {
                     
                 }
             } else {
-                addTooltip("Bid successfull", "Your bid for " + token_id + ": " + (amount / 1000000) + " algo");
+                addTooltip("Bid: successful", "Your bid for Token ID " + token_id + " for " + (amount / 1000000) + " ALGO");
             }
         }
     }
@@ -184,7 +184,7 @@ function AlgoTransferAsset(token_id, price, url) {
                         });
                     })
                     .catch((e) => {
-                        addTooltip("Failed to create the transaction", "Please retry. If the problem persits, send us an email.");
+                        addTooltip("Failed to create the transaction", "Please retry. If the problem persists, send us an email.");
                         //console.error(e);
                     });
             });
@@ -198,7 +198,7 @@ function validateTransfer(token_id, price, url, txID) {
     http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
     http.onreadystatechange = function () {//Call a function when the state changes.
         if (http.readyState == 4 && http.status == 200) {
-            addTooltip("Resale successfull", "Token ID " + token_id + " resale is on for " + price + " algo");
+            addTooltip("Resale: successful", "Token ID " + token_id + " is put on sale for " + price + " ALGO");
             try {
                 document.getElementById("picture-" + token_id).remove();
             } catch (error) {
@@ -276,7 +276,7 @@ function AlgoCreateNFT(token_id, callback = ()=>{}) {
                         (signedTx) => {
                             send_algo(signedTx, 
                                 (s) => {
-                                    addTooltip("Opt in succesfull, redirecting you to the gallery.", "");
+                                    addTooltip("Asset opt-in successful, redirecting you to the gallery.", "");
                                     callback(from, tx, signedTx);
                                 }, 
                                 () => {
