@@ -1,5 +1,5 @@
 const LEDGER = 'MainNet';
-const ADDRESS = "77NU23TEGAV6ZNWJJN27JSD2YALCCVS2GNHN75TNUMFZLXSWGTCFETDOPI";
+const ADDRESS = "QHZQTVCJZ2HZIZBOI4VDSPJM3GPOP4QL4ZGQY3D4UKTAIPRDPHAFMRWR3Y";
 
 function connect(callback = () => {}) {
     if (typeof AlgoSigner === 'undefined') {
