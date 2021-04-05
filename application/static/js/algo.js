@@ -1,5 +1,5 @@
 const LEDGER = 'MainNet';
-const ADDRESS = "QHZQTVCJZ2HZIZBOI4VDSPJM3GPOP4QL4ZGQY3D4UKTAIPRDPHAFMRWR3Y";
+const ADDRESS = "UTYFHYMKX2MN35G6A3XJ6G6AMJRKQEEGVXE2K4FE7RTSIBFVFLDIVRQRZ4";
 
 function connect(callback = () => {}) {
     if (typeof AlgoSigner === 'undefined') {
@@ -46,7 +46,7 @@ function get_param(callback = (txParams) => { }, errorCallback = () => { }) {
     })
     .catch((e) => {
         errorCallback();
-        //console.error(e);
+        console.error(e);
         addTooltip("Failed to get the parameters for the transaction", "Please retry the transaction. If the problem persists, send us an email.");
     });
 }
@@ -70,7 +70,7 @@ function pay(from, to, amount, note, txParams, callback = (status) => { }, error
     })
     .catch((e) => {
         errorCallback();
-        //console.error(e);
+        console.error(e);
         addTooltip("Failed to create the transaction", "Please retry. If the problem persists, send us an email.");
     });
 }
@@ -81,10 +81,10 @@ function get_status(txID) {
         path: '/v2/transactions/pending/' + txID
     })
         .then((d) => {
-            //console.log(d);
+            console.log(d);
         })
         .catch((e) => {
-            //console.error(e);
+            console.error(e);
         });
 }
 
@@ -97,7 +97,7 @@ function send_algo(signedTx, callback = (status) => { }, errorCallback = () => {
         callback(d);
     })
     .catch((e) => {
-        //console.error(e);
+        console.error(e);
         errorCallback();
     });
 }
@@ -134,6 +134,8 @@ function submitTransaction(amount, from, token_id, url, txID, type) {
                 } catch (error) {
                     
                 }
+            } else if (type == "ico") {
+                addTooltip("Participation in the ICO successfull", "You bought for " + (amount / 1000000) + " algo");
             } else {
                 addTooltip("Bid: successful", "Your bid for Token ID " + token_id + " for " + (amount / 1000000) + " ALGO");
             }
@@ -185,7 +187,7 @@ function AlgoTransferAsset(token_id, price, url) {
                     })
                     .catch((e) => {
                         addTooltip("Failed to create the transaction", "Please retry. If the problem persists, send us an email.");
-                        //console.error(e);
+                        console.error(e);
                     });
             });
         });
@@ -231,25 +233,28 @@ function signIn(from, token_id, note, txParams, callback = () => {}, errorCallba
             callback(d);
         })
         .catch((e) => {
-            //console.error(e);
+            console.error(e);
             errorCallback(e);
         });
 }
 
-function AlgoSignIn(amount, token_id, url) {
-    let note = "";
+function AlgoBidBuy(to, amount, note, token_id, url, type) {
     account((from) => {
         get_param((tx) => {
             signIn(from, token_id, note, tx, (signedTx) => {
                 send_algo(signedTx, (s) => {
-                    submitSignIn(amount, from, token_id, url);
+                    if (type == "validate_new") {
+                        AlgoPay(to, amount, note, token_id, url, type)
+                    } else {
+                        submitBuy(amount, from, token_id, url);
+                    }
                 });
             });
         });
     });
 }
 
-function submitSignIn(amount, from, token_id, url) {
+function submitBuy(amount, from, token_id, url) {
     var http = new XMLHttpRequest();
     http.open('POST', "/" + url, true);
     http.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');

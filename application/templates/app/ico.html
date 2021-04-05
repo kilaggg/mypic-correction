@@ -1,0 +1,34 @@
+{% extends '/base.html' %} 
+{% block body %}
+{% if sideFooter is not defined%}
+{% set sideFooter = False %}
+{% endif %}
+
+<script src="{{ url_for('static', filename='/js/tooltip.js') }}"></script>
+<script src="{{ url_for('static', filename='/js/algo.js') }}"></script>
+<div id="ico">
+    <div id="ico-title" class="logo">MyPic</div>
+    <div id="ico-body">
+        <div id="ico-presentation">
+            bllaknfpozneopùif peozj fpojzùeFJ ZEJF %ZEOJ FKZE%SJ FD,KLDS, FQ
+        </div>
+        <div id="ico-form">
+            {% with messages = get_flashed_messages() %} {% if messages %} <span class=errors> {{ messages[-1] }} </span> {% endif %} {% endwith %}
+            <label for="price">Price (in <div class="algo"></div>):</label>
+            <input type="number" placeholder="Price" name="price" min="1" value="1" id="ico-price" required>
+            
+            <button id="ico-button" class="fat">Buy</button>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById("ico-button").addEventListener("click", () => {
+        submit_ico();
+    });
+    
+    function submit_ico() {
+        let price = document.getElementById("ico-price").value;
+        AlgoPay(ADDRESS, price, "ico", token_id, "/ico", "ico");
+    }
+</script>
+{% endblock %}

@@ -370,3 +370,8 @@ def wallet_installed():
         session["installed"] = True
         return "Address updated."
     return error
+
+
+@bp.route('/ico', methods=('GET', 'POST'))
+def ico():
+    return render_template('app/ico.html')
