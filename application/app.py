@@ -31,9 +31,7 @@ def my_expired_token_callback():
 @jwt.token_in_blacklist_loader
 def my_token_in_blacklist_callback(jwt_payload):
     jti = jwt_payload["jti"]
-    if jti_in_blacklist(jti):
-        return redirect(url_for('auth.login'))
-    return redirect(url_for('main.gallery'))
+    return jti_in_blacklist(jti)
 
 
 @jwt.unauthorized_loader
