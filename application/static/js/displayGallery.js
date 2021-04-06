@@ -21,7 +21,13 @@ function initGallery(mainPage, subpage, errors, subpageType) {
             switch_page(page);
         });
     }
-    switch_page(subpage[0]);
+    let s = localStorage.getItem("page");
+    if (subpage.includes(s)) {
+        switch_page(s);
+        localStorage.removeItem("page");
+    } else {
+        switch_page(subpage[0]);
+    }
 
     window.addEventListener('scroll', (event) => {
         if (window.scrollY + window.innerHeight > 0.8 * document.documentElement.scrollHeight

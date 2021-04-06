@@ -94,6 +94,7 @@
                 } else if (parsed.status == 200) {
                     addTooltip("Creation done, redirecting you to your gallery", "");
                     setTimeout(() => {
+                            localStorage.setItem("page", "my-sell");
                             window.location.href = "/gallery";
                         }, 4000);
                     /*AlgoCreateNFT(parsed.token_id, (from, tx, signedTx) => {
