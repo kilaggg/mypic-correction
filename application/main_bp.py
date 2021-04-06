@@ -322,8 +322,8 @@ def market() -> str:
             int(request.form['price'])
         except ValueError:
             error = "Enter an integer for price."
-        if int(request.form['price']) < 1:
-            error = "Price should be higher that 1 Algo."
+        if int(request.form['price']) < 10:
+            error = "Price should be higher than 10 Algo."
         try:
             int(request.form['duration'])
         except ValueError:

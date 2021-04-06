@@ -169,7 +169,7 @@ def registration_validation() -> Union[str, Response]:
                 user_client = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, PROFILE_PICTURES_CONTAINER,
                                                                 f"{username}.png")
                 user_client.upload_blob(data, overwrite=True)
-                response = make_response(redirect(url_for('main.gallery')))
+                response = make_response(redirect(url_for('main.account')))
                 access_token = create_access_token(identity={"email": email, "username": username})
                 refresh_token = create_refresh_token(identity={"email": email, "username": username})
                 set_access_cookies(response, access_token)

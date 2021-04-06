@@ -1,7 +1,7 @@
 from application import ADDRESS_ALGO_OURSELF, dict_bid#, socketio
 from application.market import execute_bid
 from application.smart_contract import transfer_algo_to_user, verify_bid_transaction, verify_buy_transaction
-from application.user import get_current_price_from_token_id, get_previous_bidder
+from application.user import get_current_price_from_token_id, get_date_from_token_id, get_previous_bidder
 from datetime import datetime, timedelta
 from flask import redirect, url_for
 import json
@@ -26,10 +26,12 @@ def manage_auction(form, username):
         token_id = int(form['token_id'])
         price = int(form['price'])
         if form['type'] == 'new':
+            if datetime.utcnow() > get_date_from_token_id(token_id):
+                return json.dumps({"status": 404, 'e': 'Auction has expired'})
             if price < int(get_current_price_from_token_id(token_id) * 1.1) + 1:
                 return json.dumps({"status": 404, 'e': 'Price is not enough'})
-            if token_id in dict_bid and dict_bid[token_id][0] + timedelta(minutes=3) > datetime.utcnow():
-                return json.dumps({"status": 404, 'e': 'Someone process a bid, retry in few seconds'})
+            if token_id in dict_bid and dict_bid[token_id][0] + timedelta(minutes=2) > datetime.utcnow():
+                return json.dumps({"status": 404, 'e': 'Someone process a bid, retry in one minute'})
             dict_bid[token_id] = [datetime.utcnow(), username, price]
             return json.dumps({'status': 200,
                                'to': ADDRESS_ALGO_OURSELF,

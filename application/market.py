@@ -228,8 +228,6 @@ def upload_image_swarm(file: FileStorage, username: str, is_public) -> (str, str
         headers = {"content-type": f"image/{image_format}"}
     else:
         headers = {"content-type": f"image/{image_format}", "Swarm-Encrypt": "true"}
-    import time
-    a = time.time()
     result = requests.post(url, data=file, headers=headers)
     swarm_hash = json.loads(result.content.decode('utf8'))["reference"]
     # swarm_hash = result.content.decode('utf8')

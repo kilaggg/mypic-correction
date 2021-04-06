@@ -67,6 +67,13 @@ def get_current_price_from_token_id(token_id: int) -> Optional[int]:
     return None
 
 
+def get_date_from_token_id(token_id: int):
+    if token_id_in_new_sell(token_id):
+        query = f"SELECT end_date FROM {SCHEMA}.{NEW_SELL_TABLE_NAME} WHERE token_id={token_id}"
+        return SqlManager().query_df(query).loc[0, 'end_date']
+    return None
+
+
 def get_nsfw_from_email(email: str) -> Optional[bool]:
     if email_in_db(email):
         query = f"SELECT nsfw FROM {SCHEMA}.{ACCOUNT_TABLE_NAME} WHERE email='{email}'"
@@ -244,3 +251,6 @@ def update_password(email: str, password: str) -> None:
 def username_in_db(username: str) -> bool:
     query = f"SELECT COUNT(*) AS total FROM {SCHEMA}.{ACCOUNT_TABLE_NAME} WHERE username='{username}'"
     return SqlManager().query_df(query).loc[0, 'total'] == 1
+
+from datetime import datetime
+print(datetime.utcnow() < get_date_from_token_id(186472151))
