@@ -251,6 +251,3 @@ def update_password(email: str, password: str) -> None:
 def username_in_db(username: str) -> bool:
     query = f"SELECT COUNT(*) AS total FROM {SCHEMA}.{ACCOUNT_TABLE_NAME} WHERE username='{username}'"
     return SqlManager().query_df(query).loc[0, 'total'] == 1
-
-from datetime import datetime
-print(datetime.utcnow() < get_date_from_token_id(186472151))
