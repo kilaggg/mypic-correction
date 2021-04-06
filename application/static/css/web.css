@@ -56,6 +56,10 @@
     content: none;
 }
 
+.logo.smaller::after {
+    content: none;
+}
+
 html {
     margin: 0px;
     height: 100%;

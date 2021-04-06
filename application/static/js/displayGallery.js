@@ -23,7 +23,7 @@ function initGallery(mainPage, subpage, errors, subpageType) {
     }
     switch_page(subpage[0]);
 
-    $(window).scroll((event) => {
+    window.addEventListener('scroll', (event) => {
         if (window.scrollY + window.innerHeight > 0.8 * document.documentElement.scrollHeight
             && displayedFirst[currentPage]
             && !requestedMorePictures[currentPage]
@@ -215,9 +215,9 @@ function requestMore(page) {
     http.onreadystatechange = function () {//Call a function when the state changes.
         if (http.readyState == 4 && http.status == 200) {
             displayMore(JSON.parse(http.responseText).pictures, page);
+            document.querySelector(".loading").classList.add("hidden");
+            requestedMorePictures[page] = false;
         }
-        requestedMorePictures[page] = false;
-        document.querySelector(".loading").classList.add("hidden");
     }
     http.send("more=" + page);
 }
