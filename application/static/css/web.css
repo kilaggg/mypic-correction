@@ -17,8 +17,31 @@
 }
 
 .logo {
+    position: relative;
     color: var(--lead-color);
     font-family: 'Parisienne', cursive;
+    font-size: xx-large;
+}
+
+.logo::before {
+    display: inline-block;
+    content: "";
+    background-image: url("../img/mypic.svg");
+    background-repeat: no-repeat;
+    background-size: contain;
+    width: 40px;
+    height: 40px;
+    position: absolute;
+    top: 6px;
+    left: -44px;
+}
+
+.logo.smaller {
+    font-size: initial;
+}
+
+.logo.smaller::before {
+    content: none;
 }
 
 html {
@@ -116,6 +139,7 @@ input::placeholder {
     align-items: center;
     justify-items: center;
     max-height: 480px;
+    padding-top: 20px;
 }
 
 #forgot-password-button {
@@ -192,10 +216,10 @@ input::placeholder {
     border-radius: 22px;
     background-image: url("../img/front1.jpeg");
     background-size: cover;
-    width: 230px;
+    width: 224px;
     height: 489px;
     background-repeat: no-repeat;
-    right: -193px;
+    right: -186px;
     bottom: 5px;
     animation: animated-login-phone 10s infinite alternate;
     background-position: center;
@@ -269,7 +293,7 @@ NavBar
     align-items: center;
     background: white;
     border: 1px solid var(--outline-color);
-    padding: 5px 30px;
+    padding: 0px 10px 0px 70px;
     margin-bottom: 10px;
 }
 
