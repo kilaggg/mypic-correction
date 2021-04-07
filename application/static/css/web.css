@@ -265,6 +265,40 @@ input::placeholder {
     background-color: transparent;
 }
 
+
+/* Login page for mobile */
+@media only screen and (max-width: 700px) {
+    #log-in-page {
+        display: block;
+    }
+
+    #log-in-page .image{
+        display: none;
+    }
+
+    #log-in-page .login{
+        width: 100vw;
+    }
+
+    .login form {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    #forgot-password-button {
+        top: -11px;
+        right: 0px;
+    }
+
+    .login input {
+        margin: 28px 25px;
+    }
+  }
+
+
+
 /* Footer */
 .footer {
     position: absolute;
@@ -1308,4 +1342,20 @@ https://loading.io/css/
 
 #market.preview #create-form > button {
     grid-column: span 3;
+}
+
+.image-button {
+    margin: 2px;
+    width: 30px;
+    height: 30px;
+}
+
+.image-button img{
+    width: auto;
+    height: 30px;
+}
+
+.social-network {
+    display: flex;
+    padding: 32px;
 }

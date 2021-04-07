@@ -3,6 +3,13 @@
 <div id="contact">
     <h1>Contact:</h1>
     <p><b>Email:</b> contact@mypic.io</p>
-    <p><b>Twitter:</b> https://twitter.com/MyPicNFT</p>
+    <div class="social-network">
+        <a class="image-button" href="https://twitter.com/MyPicNFT">
+            <img src="{{ url_for('static', filename='/img/twitter.png') }}"></img>
+        </a>
+        <a class="image-button" href="https://www.reddit.com/r/MyPicOfficial/">
+            <img src="{{ url_for('static', filename='/img/reddit.png') }}"></img>
+        </a>
+    </div>
 </div>
 {% endblock %}

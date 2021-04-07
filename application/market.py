@@ -55,7 +55,7 @@ def build_image_gallery(row: Series, my: bool, nsfw: bool) -> dict:
              'extention': f"{row['extension']}",
              'uri': f"data:image/{extension};base64,{download_blob_data(container, image_path)}",
              'token_id': row['token_id'],
-             'title': title,
+             'title': row['title'],
              'title_full': row['title'],
              'pp': f"data:image/{pp_extension};base64,{download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)}"}
     return image
@@ -70,7 +70,7 @@ def build_new_image(row: Series, my: bool, nsfw: bool) -> dict:
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{row['username'].lower()}.{pp_extension}"
     title = row['title'] if len(row['title']) <= 13 else row['title'][:13] + '...'
     image = {'username': row['username'],
-             'title': title,
+             'title': row['title'],
              'title_full': row['title'],
              'extension': f"{extension}",
              'uri': f"data:image/{extension};base64,{download_blob_data(container, image_path)}",
@@ -92,7 +92,7 @@ def build_resale_images(row: Series, my: bool, nsfw: bool) -> dict:
     title = row['title'] if len(row['title']) <= 13 else row['title'][:13] + '...'
     image = {'seller': row['seller'],
              'username': row['creator'],
-             'title': title,
+             'title': row['title'],
              'title_full': row['title'],
              'extension': f"{row['extension']}",
              'uri': f"data:image/{extension};base64,{download_blob_data(container, image_path)}",
