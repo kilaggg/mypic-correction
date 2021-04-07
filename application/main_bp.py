@@ -63,6 +63,7 @@ def account() -> str:
     email = get_jwt_identity()['email']
     username = get_jwt_identity()['username']
     fullname = get_fullname_from_email(email)
+    address = get_address_from_username(username)
     pp_extension = get_profile_picture_extension_from_email(email)
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
@@ -71,6 +72,7 @@ def account() -> str:
     user = {'username': username,
             'fullname': fullname,
             'nsfw': nsfw,
+            'address': address,
             'profile_picture': f"data:{pp_extension};base64,{profile_picture}",
             'followers': str(followers)}
     if request.method == 'POST':

@@ -18,9 +18,9 @@ app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(hours=12)
 jwt = JWTManager(app)
 
 
-@app.route("/")
-def hello():
-    return redirect(url_for('main.gallery'))
+# @app.route("/")
+# def hello():
+#     return redirect(url_for('auth.auth_feed'))
 
 
 @jwt.expired_token_loader

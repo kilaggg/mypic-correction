@@ -690,6 +690,11 @@ Gallery: Picture
     width: 250px;
 }
 
+.modal .description {
+    text-align: justify;
+    text-justify: inter-word;
+}
+
 
 .loading {
     display: block;
@@ -779,8 +784,15 @@ Market
 }
 
 #market #create-form > .file-selector-styled label {
-    color: var(--lead-color);
+    color: white;
+    background-color: var(--lead-color-lighter);
+    padding: 8px;
+    border-radius: 16px;
     font-weight: bolder;
+}
+
+#market #create-form > .file-selector-styled label:hover {
+    background-color: var(--lead-color);
 }
 
 #market #create-form > img {
@@ -838,7 +850,7 @@ Account
     margin-top: 30px;
     display: grid;
     justify-items: center;
-    grid-template-columns: 120px auto;
+    grid-template-columns: 130px auto;
     grid-template-rows: 140px auto;
     width: 50%;
     height: 100%;
@@ -943,6 +955,29 @@ Account
     padding: 10px 50px;
 }
 
+
+#notifications-page {
+    margin-bottom: 10px;
+}
+
+#notifications {
+    grid-area: page;
+    display: grid;
+    grid-template-columns: 120px auto;
+    gap: 6px 30px;
+    margin: 20px 0px;
+}
+
+#notifications > button {
+    margin-top: 30px;
+    grid-column-start: span 2;
+} 
+
+#notifications > label {
+    text-align: right;
+    font-weight: bolder;
+}
+
 #account-nav {
     grid-area: nav;
     display: grid;
@@ -956,7 +991,7 @@ Account
     height: 40px;
     font-size: larger;
     border: none;
-    width: 120px;
+    width: 130px;
 }
 
 #account-nav button.selected {
@@ -1334,63 +1369,6 @@ https://loading.io/css/
     max-width: 300px;
 }
 
-
-#market #create-form > input {
-    width: 150px;
-    grid-column: 2;
-}
-
-#market #create-form > .file-selector-styled {
-    grid-column: span 2;
-    justify-self: center;
-    text-align: center;
-}
-
-#market #create-form > .file-selector-styled input {
-    opacity: 0;
-    z-index: -1;
-    position: absolute;
-    width: 0px;
-    height: 0px;
-}
-
-#market #create-form > .file-selector-styled label {
-    color: var(--lead-color);
-    font-weight: bolder;
-}
-
-#market #create-form > img {
-    display: none;
-}
-
-#market.preview #create-form > img {
-    display: initial;
-    grid-column: 3;
-    grid-row: 1 span 5;
-    justify-self: center;
-    max-height: 250px;
-    max-width: 250px;
-}
-
-#market #create-form > label {
-    justify-self: right;
-    grid-column: 1;
-}
-
-#market #create-form > label.switch {
-    justify-self: left;
-    grid-column: 2;
-}
-
-#market #create-form > button {
-    grid-column: span 2;
-    justify-self: center;
-}
-
-#market.preview #create-form > button {
-    grid-column: span 3;
-}
-
 .image-button {
     margin: 2px;
     width: 30px;
@@ -1405,4 +1383,8 @@ https://loading.io/css/
 .social-network {
     display: flex;
     padding: 32px;
+}
+
+.break-all-word {
+    word-break: break-word;
 }

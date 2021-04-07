@@ -84,6 +84,25 @@ def build_new_image(row: Series, my: bool, nsfw: bool) -> dict:
     return image
 
 
+def build_new_image_home(row: Series) -> dict:
+    extension = row['extension']
+    image_path = f"{row['username'].lower()}/{row['swarm_hash']}.{extension}"
+    pp_extension = row['profile_picture_extension']
+    pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{row['username'].lower()}.{pp_extension}"
+    image = {'username': row['username'],
+             'title': row['title'],
+             'title_full': row['title'],
+             'extension': f"{extension}",
+             'uri': f"data:image/{extension};base64,{download_blob_data(IMAGES_CONTAINER, image_path)}",
+             'token_id': row['token_id'],
+             'price': row['current_price'],
+             'description': row['description'],
+             'min_price': int(row['current_price'] * 1.1) + 1,
+             'end_date': row['end_date'].strftime("%Y-%m-%d %H:%M:%S"),
+             'pp': f"data:image/{pp_extension};base64,{download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)}"}
+    return image
+
+
 def build_resale_images(row: Series, my: bool, nsfw: bool) -> dict:
     nsfw = nsfw or not bool(row['is_nsfw'])
     container = IMAGES_CONTAINER if (row['is_public'] or my) and nsfw else BLURRY_IMAGES_CONTAINER
@@ -211,6 +230,17 @@ def get_new_images(page: int, nsfw: bool, username: str = None, email: str = Non
     df = df.loc[page * NUMBER_PRINT_IMAGE:(page + 1) * NUMBER_PRINT_IMAGE - 1]
     num_cores = multiprocessing.cpu_count()
     new_images = Parallel(n_jobs=num_cores)(delayed(build_new_image)(row, my, nsfw) for _, row in df.iterrows())
+    return new_images
+
+
+def get_new_images_home() -> list:
+    query = f"SELECT * FROM {SCHEMA}.{NEW_SELL_VIEW_NAME} WHERE is_nsfw=0 and is_public=1"
+    df = SqlManager().query_df(query)
+    df = df.sample(frac=1)
+    df.reset_index(inplace=True)
+    df = df.loc[0:8]
+    num_cores = multiprocessing.cpu_count()
+    new_images = Parallel(n_jobs=num_cores)(delayed(build_new_image_home)(row) for _, row in df.iterrows())
     return new_images
 
 

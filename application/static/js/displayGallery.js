@@ -6,27 +6,36 @@ let Subpage;
 let Errors
 let SubpageType;
 let currentPage;
+let AskForMore;
 
-function initGallery(mainPage, subpage, errors, subpageType) {
+function initGallery(mainPage, subpage, errors, subpageType, askForMore=true) {
     MainPage = mainPage;
     Subpage = subpage;
     Errors = errors;
     SubpageType = subpageType;
+    AskForMore = askForMore;
 
-    for (let page of subpage) {
-        displayedFirst[page] = false;
-        endPage[page] = false;
-        requestedMorePictures[page] = false;
-        document.getElementById(page + "_button").addEventListener("click", () => {
-            switch_page(page);
-        });
-    }
-    let s = localStorage.getItem("page");
-    if (subpage.includes(s)) {
-        switch_page(s);
-        localStorage.removeItem("page");
+    if (subpage.length > 1) {
+
+        for (let page of subpage) {
+            displayedFirst[page] = false;
+            endPage[page] = false;
+            requestedMorePictures[page] = false;
+            document.getElementById(page + "_button").addEventListener("click", () => {
+                switch_page(page);
+            });
+        }
+
+        let s = localStorage.getItem("page");
+        if (subpage.includes(s)) {
+            switch_page(s);
+            localStorage.removeItem("page");
+        } else {
+            switch_page(subpage[0]);
+        }
     } else {
-        switch_page(subpage[0]);
+        currentPage = subpage[0];
+        requestMore(subpage[0]);
     }
 
     window.addEventListener('scroll', (event) => {
@@ -110,7 +119,22 @@ function displayImage(page, image, type) {
             sell(image.token_id, price, MainPage);
         })
         form.appendChild(submit);
-    } else if (type == "bid") {
+    } else if (type == "preview") {
+        let price = document.createElement("div");
+        price.classList.add("picture-bid")
+        price.innerText = image.min_price;
+        form.appendChild(price);
+
+        let algo = document.createElement("div");
+        algo.classList.add("algo");
+        form.appendChild(algo);
+
+        let countdown = document.createElement("div");
+        countdown.classList.add("picture-countdown");
+        createCountdown(image.end_date.replace(" ", "T"), countdown);
+        picture_div.appendChild(countdown);
+
+    }else if (type == "bid") {
         let price = document.createElement("input");
         price.classList.add("picture-bid")
         price.setAttribute("type", "number");
@@ -209,6 +233,10 @@ function displayMore(images, page) {
 
     for (let image of images) {
         displayImage(page, image, SubpageType[page]);
+    }
+
+    if(!AskForMore) {
+        endPage[page] = true;
     }
 }
 

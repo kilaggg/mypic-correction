@@ -1,5 +1,6 @@
 from application import BLOB_CONNECTION_STRING
 from application.constants import *
+from application.market import get_new_images_home
 from application.user import (
     check_code,
     email_in_db,
@@ -35,6 +36,7 @@ from flask_jwt_extended import (
 from flask.wrappers import Response
 from typing import Union
 from werkzeug.security import safe_str_cmp
+import json
 import re
 
 
@@ -240,3 +242,11 @@ def reset_password() -> Union[str, Response]:
                 return response
         flash(error)
     return render_template('auth/reset_password.html')
+
+
+@bp.route('/', methods=('GET', 'POST'))
+def auth_feed() -> str:
+    if request.method == 'POST' and "more" in request.form:
+        data_new_images = get_new_images_home()
+        return json.dumps({"pictures": data_new_images})
+    return render_template('auth/auth_feed.html')

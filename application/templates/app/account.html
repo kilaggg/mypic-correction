@@ -17,6 +17,7 @@
     <div id="account-nav">
         <button id="parameter-button">Parameters</button>
         <button id="algo-button">Wallet</button>
+        <button id="notifications-button">Notifications</button>
     </div>
 
     <div id="parameter-page">
@@ -45,25 +46,42 @@
     </div>
   
     <div id="algo-page">
+        {% if user.address == None %}
+            <div>To buy on MyPic, you need to install <a href="https://chrome.google.com/webstore/detail/algosigner/kmmolakhbgdlpkjkcjkebenjheonagdm">AlgoSigner extension</a>  (Chrome only).
+            <br>
+            After the installation, click on "Connect" bellow to link your Algo wallet.</div>
+            <br>
+            <div id="algo-help-message" class="break-all-word"></div>
+            <br>
+            <button id="connect-algosigner" class="fat">Connect</button>
+        {% else %}
+            <div class="break-all-word">You are connected with the address: {{user.address}} </div>
+        {% endif %}
+    </div>
 
-        <div>To buy on MyPic, you need to install <a href="https://chrome.google.com/webstore/detail/algosigner/kmmolakhbgdlpkjkcjkebenjheonagdm">AlgoSigner extension</a>  (Chrome only).
-        <br>
-        After the installation, click on "Connect" bellow to link your Algo wallet.</div>
-        <br>
-        <div id="algo-help-message"></div>
-        <br>
-        <button id="connect-algosigner" class="fat">Connect</button>
+    <div id="notifications-page">
+        <p>Optin for email notifications.</p>
+        <div id="notifications">
+            <label for="fullname">Sales end</label>
+            <label class="switch">
+                <input type="checkbox" name="notif_end_sale" id="notif-end-sale" {% if user.notif_end_sale == true %} checked {% endif %}>
+                <span class="slider round">
+                </span>
+            </label>
+
+            <button type="submit" name="update_notifications" id="update_notifications" class="fat">Submit</button>
+        </div>
     </div>
 </div>
 
 <script>
-    document.getElementById("parameter-button").addEventListener("click", () => {
-        switch_page('parameter');
-    });
+    let Subpage = ["parameter", "algo", "notifications"];
 
-    document.getElementById("algo-button").addEventListener("click", () => {
-        switch_page('algo');
+    for (let x of Subpage) {
+        document.getElementById(x + "-button").addEventListener("click", () => {
+        switch_page(x);
     });
+    }
     
     $(function () {
         $("input:file").change(function () {
@@ -73,31 +91,19 @@
     });
 
     function switch_page(page) {
-        switch (page) {
-            case "parameter":
-                document.getElementById("parameter-page")
+        for (let x of Subpage) {
+            console.log(x)
+            if (x == page) {
+                document.getElementById(x + "-page")
                     .classList.remove("hidden");
-                document.getElementById("algo-page")
-                    .classList.add("hidden");
-
-                document.getElementById("parameter-button")
+                document.getElementById(x + "-button")
                     .classList.add("selected");
-                document.getElementById("algo-button")
-                    .classList.remove("selected");
-                break;
-
-            case "algo":
-                document.getElementById("parameter-page")
+            } else {
+                document.getElementById(x + "-page")
                     .classList.add("hidden");
-                document.getElementById("algo-page")
-                    .classList.remove("hidden");
-
-                document.getElementById("parameter-button")
+                document.getElementById(x + "-button")
                     .classList.remove("selected");
-                document.getElementById("algo-button")
-                    .classList.add("selected");
-
-                break;
+            }
         }
     }
 
@@ -156,7 +162,7 @@
 
             http.onreadystatechange = function () {
                 if (http.readyState == 4 && http.status == 200) {
-                    $('#algo-help-message').html('AlgoSigner is connected.');
+                    $('#algo-help-message').html('AlgoSigner is connected with: ' + d[0]['address']);
                     try {
                         document.getElementById("algo-status-bar").remove();
                     } catch (error) {
@@ -167,6 +173,34 @@
             }
             http.send(formData);
         });
+    });
+
+
+    function update_notifications() {
+        var http = new XMLHttpRequest();
+        http.open('POST', '/account', true);
+
+        var formData = new FormData();
+        document.querySelectorAll("#notifications input:not(input[type='checkbox'])").forEach(function (input) {
+            formData.append(input.name, input.value);
+        });
+        document.querySelectorAll("#notifications input[type='checkbox']").forEach(function (input) {
+            formData.append(input.name, (input.checked) ? "on" : "off" );
+        });
+
+        formData.append("update_notifications", "");
+
+        http.onreadystatechange = function () {//Call a function when the state changes.
+            if (http.readyState == 4 && http.status == 200) {
+                addTooltip("Account notifications updated", "", true);
+            }
+        }
+        http.send(formData);
+    }
+
+    document.getElementById("update_notifications")
+        .addEventListener("click", () => {
+            update_notifications();
     });
 </script>
 {% endblock %}
