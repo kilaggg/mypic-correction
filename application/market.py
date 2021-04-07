@@ -57,6 +57,7 @@ def build_image_gallery(row: Series, my: bool, nsfw: bool) -> dict:
              'token_id': row['token_id'],
              'title': row['title'],
              'title_full': row['title'],
+             'description': row['description'],
              'pp': f"data:image/{pp_extension};base64,{download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)}"}
     return image
 
@@ -76,6 +77,7 @@ def build_new_image(row: Series, my: bool, nsfw: bool) -> dict:
              'uri': f"data:image/{extension};base64,{download_blob_data(container, image_path)}",
              'token_id': row['token_id'],
              'price': row['current_price'],
+             'description': row['description'],
              'min_price': int(row['current_price'] * 1.1) + 1,
              'end_date': row['end_date'].strftime("%Y-%m-%d %H:%M:%S"),
              'pp': f"data:image/{pp_extension};base64,{download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)}"}
@@ -98,6 +100,7 @@ def build_resale_images(row: Series, my: bool, nsfw: bool) -> dict:
              'uri': f"data:image/{extension};base64,{download_blob_data(container, image_path)}",
              'token_id': row['token_id'],
              'price': row['price'],
+             'description': row['description'],
              'pp': f"data:image/{pp_extension};base64,{download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)}"}
     return image
 
@@ -171,7 +174,7 @@ def execute_buy(token_id):
 
 def get_data_from_token_id(token_ids: list):
     query = f"SELECT {SCHEMA}.{TOKEN_TABLE_NAME}.username, extension, swarm_hash, title, token_id, Token.is_public, " \
-            f"profile_picture_extension, is_nsfw " \
+            f"profile_picture_extension, is_nsfw, description " \
             f"FROM {SCHEMA}.{TOKEN_TABLE_NAME} " \
             f"LEFT JOIN {SCHEMA}.{ACCOUNT_TABLE_NAME} " \
             f"ON {SCHEMA}.{TOKEN_TABLE_NAME}.username = {SCHEMA}.{ACCOUNT_TABLE_NAME}.username " \
@@ -245,7 +248,7 @@ def upload_image_swarm(file: FileStorage, username: str, is_public) -> (str, str
     blob_client = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, IMAGES_CONTAINER,
                                                     f"{username.lower()}/{swarm_hash[:64]}.{image_format}")
     blob_client.upload_blob(hex_data, overwrite=True)
-    blurry_image = Image.open(file).filter(ImageFilter.BoxBlur(30))
+    blurry_image = Image.open(file).filter(ImageFilter.BoxBlur(50))
     blurry_output = io.BytesIO()
     blurry_image.save(blurry_output, format=image_format)
     blurry_hex_data = blurry_output.getvalue()

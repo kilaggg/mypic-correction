@@ -4,9 +4,11 @@ from application.smart_contract import (
     create_resale_smart_contract,
     fund_smart_contract,
     send_transactions,
+    transfer_algo_to_user,
     verify_buy_transaction,
     wait_for_confirmation
 )
+from application.user import get_address_of_resale, get_royalties
 import json
 
 
@@ -52,7 +54,14 @@ def manage_buy(form, username):
                 if verify_buy_transaction(tx_id):
                     tx_swap_id = send_transactions(dict_buy[note])
                     tx_swap_info = wait_for_confirmation(tx_swap_id)
-                    if bool(tx_swap_info.get('confirmed-round')):
+                    owner_address = get_address_of_resale(token_id)
+                    royalties = get_royalties(token_id)
+                    price_owner = int(price * (100 - royalties) * 10000)
+                    print("price owner", price_owner)
+                    tx_owner_id = transfer_algo_to_user(owner_address, price_owner)
+                    tx_owner_info = wait_for_confirmation(tx_owner_id)
+                    # creator_address =
+                    if bool(tx_swap_info.get('confirmed-round')) & bool(tx_owner_info.get('confirmed-round')):
                         execute_buy(token_id)
                         dict_buy.pop(note, None)
                         return "Buy done"

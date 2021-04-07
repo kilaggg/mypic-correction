@@ -81,6 +81,13 @@ def get_nsfw_from_email(email: str) -> Optional[bool]:
     return None
 
 
+def get_royalties(token_id: int) -> Optional[int]:
+    if token_is_exist(token_id):
+        query = f"SELECT royalties FROM {SCHEMA}.{TOKEN_TABLE_NAME} WHERE token_id={token_id}"
+        return SqlManager().query_df(query).loc[0, 'royalties']
+    return None
+
+
 def get_username_of_resale(token_id: int) -> Optional[str]:
     if token_id_in_resale(token_id):
         query = f"SELECT username FROM {SCHEMA}.{RESELL_TABLE_NAME} WHERE token_id='{token_id}'"
@@ -194,6 +201,11 @@ def save_to_db_temp(reason: str, email: str, username: str = None, password: str
             "object": f"MyPic Security - {reason}"}
     headers = {"Content-Type": "application/json"}
     requests.post(LOGIC_APP_MAIL_URL, headers=headers, json=data)
+
+
+def token_is_exist(token_id: int) -> bool:
+    query = f"SELECT COUNT(*) AS total FROM {SCHEMA}.{TOKEN_TABLE_NAME} WHERE token_id={token_id}"
+    return SqlManager().query_df(query).loc[0, 'total'] == 1
 
 
 def token_id_in_new_sell(token_id: int) -> bool:
