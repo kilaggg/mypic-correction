@@ -114,7 +114,7 @@ def cancel_resale(token_id: int) -> bool:
 
 
 def create_new_image(username: str, file: FileStorage, title: str, price: int, end_date: datetime, is_public: int,
-                     is_nsfw: int) -> int:
+                     is_nsfw: int, royalties: int, description: str) -> int:
     extension = DICTIONARY_FORMAT[secure_filename(file.filename).split('.')[-1].lower()]
     swarm_hash_all = upload_image_swarm(file, username, is_public)
     swarm_hash = swarm_hash_all[:64]
@@ -126,8 +126,9 @@ def create_new_image(username: str, file: FileStorage, title: str, price: int, e
                                  title=title,
                                  number=0)
     query = f"INSERT INTO {SCHEMA}.{TOKEN_TABLE_NAME} " \
-            f"(token_id, username, swarm_hash, title, extension, number, is_public, is_nsfw) " \
-            f"VALUES ({token_id}, '{username}', '{swarm_hash}', '{title}', '{extension}', 1, {is_public}, {is_nsfw})"
+            f"(token_id, username, swarm_hash, title, extension, number, is_public, is_nsfw, royalties, description) " \
+            f"VALUES ({token_id}, '{username}', '{swarm_hash}', '{title}', '{extension}', 1, {is_public}, {is_nsfw}, " \
+            f"{royalties}, '{description}')"
     SqlManager().execute_query(query, True)
     query = f"INSERT INTO {SCHEMA}.{SWARM_ENCRYPT_TABLE_NAME} (token_id, swarm_hash, swarm_key) " \
             f"VALUES ({token_id}, '{swarm_hash}', '{swarm_key}')"

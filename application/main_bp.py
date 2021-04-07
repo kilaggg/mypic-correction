@@ -54,6 +54,7 @@ import re
 
 bp = Blueprint('main', __name__, url_prefix='')
 REGEX_TITLE_IMAGE = "^[a-zA-Z0-9 ]*$"
+REGEX_DESCRIPTION_IMAGE = "^[a-zA-Z0-9 .,]*$"
 
 
 @bp.route('/account', methods=('GET', 'POST'))
@@ -318,6 +319,10 @@ def market() -> str:
             error = "Private is required."
         if 'nsfw' not in request.form:
             error = "NSFW is required."
+        if 'royalties' not in request.form:
+            error = "Royalties is required."
+        if 'description' not in request.form:
+            error = "Description is required."
         try:
             int(request.form['price'])
         except ValueError:
@@ -330,10 +335,20 @@ def market() -> str:
             error = "Enter an integer for duration."
         if int(request.form['duration']) > 200 or int(request.form['duration']) < 1:
             error = "Choose a duration between 1 and 200 hours"
+        try:
+            int(request.form['royalties'])
+        except ValueError:
+            error = "Enter an integer for royalties."
+        if int(request.form['royalties']) > 5 or int(request.form['royalties']) < 0:
+            error = "Choose a royalties between 0 and 5 hours"
+        if len(request.form['description']) > 255:
+            error = "Description should be with a maximum of 255 characters."
         if len(request.form['title']) > 30:
             error = "Title should be with a maximum of 30 characters."
         if not bool(re.match(REGEX_TITLE_IMAGE, request.form['title'])):
             error = "Title should contains only letters, numbers and spaces"
+        if not bool(re.match(REGEX_DESCRIPTION_IMAGE, request.form['description'])):
+            error = "Description should contains only letters, numbers, spaces, commas and dots"
         if secure_filename(request.files['file'].filename).split('.')[-1].lower() not in DICTIONARY_FORMAT:
             error = f"We only accept format in : {','.join(list(DICTIONARY_FORMAT.keys()))}"
 
@@ -346,10 +361,12 @@ def market() -> str:
             file = request.files['file']
             title = request.form['title']
             price = int(request.form['price'])
+            royalties = int(request.form['royalties'])
+            description = request.form['description']
             end_date = datetime.utcnow() + timedelta(hours=int(request.form['duration']))
             public = 0 if request.form['private'] == 'on' else 1
             nsfw = 0 if request.form['nsfw'] == 'off' else 1
-            token_id = create_new_image(username, file, title, price, end_date, public, nsfw)
+            token_id = create_new_image(username, file, title, price, end_date, public, nsfw, royalties, description)
             return json.dumps({'status': 200,
                                'token_id': token_id})
         return json.dumps({'status': 404, 'e': error})
