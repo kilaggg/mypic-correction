@@ -330,8 +330,8 @@ def market() -> str:
             error = "Enter an integer for duration."
         if int(request.form['duration']) > 200 or int(request.form['duration']) < 1:
             error = "Choose a duration between 1 and 200 hours"
-        if len(request.form['title']) > 13:
-            error = "Title should be with a maximum of 13 characters."
+        if len(request.form['title']) > 30:
+            error = "Title should be with a maximum of 30 characters."
         if not bool(re.match(REGEX_TITLE_IMAGE, request.form['title'])):
             error = "Title should contains only letters, numbers and spaces"
         if secure_filename(request.files['file'].filename).split('.')[-1].lower() not in DICTIONARY_FORMAT:
@@ -370,8 +370,3 @@ def wallet_installed():
         session["installed"] = True
         return "Address updated."
     return error
-
-
-# @bp.route('/ico', methods=('GET', 'POST'))
-# def ico():
-#     return render_template('app/ico.html')

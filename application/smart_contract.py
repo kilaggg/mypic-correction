@@ -60,7 +60,7 @@ def mint_official_nft(swarm_hash: str, is_public: bool, username: str, title: st
     tx_note_json_str = json.dumps(data_set)
     tx_note_bytes = tx_note_json_str.encode("utf-8")
     swarm_hash_bytes = unhexlify(swarm_hash)
-    asset_name = f"MyPic {username} {title}"[:38]
+    asset_name = f"MyPic {username} {title[:29]}..."[:32]
     txn = AssetConfigTxn(sender=accounts[1]['pk'],
                          sp=params,
                          total=1,

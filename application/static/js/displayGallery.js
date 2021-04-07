@@ -254,7 +254,7 @@ function addModal(image, page) {
 
     let title = document.createElement("h1");
     title.classList.add("modal-title");
-    title.innerText = image.title;
+    title.innerText = image.title_full;
     modal_header.append(title);
 
     let modal_body = document.createElement("div");

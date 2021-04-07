@@ -50,11 +50,13 @@ def build_image_gallery(row: Series, my: bool, nsfw: bool) -> dict:
     image_path = f"{row['username'].lower()}/{row['swarm_hash']}.{extension}"
     pp_extension = row['profile_picture_extension']
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{row['username'].lower()}.{pp_extension}"
+    title = row['title'] if len(row['title']) <= 13 else row['title'][:13] + '...'
     image = {'username': row['username'],
              'extention': f"{row['extension']}",
              'uri': f"data:image/{extension};base64,{download_blob_data(container, image_path)}",
              'token_id': row['token_id'],
-             'title': row['title'],
+             'title': title,
+             'title_full': row['title'],
              'pp': f"data:image/{pp_extension};base64,{download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)}"}
     return image
 
@@ -66,8 +68,10 @@ def build_new_image(row: Series, my: bool, nsfw: bool) -> dict:
     image_path = f"{row['username'].lower()}/{row['swarm_hash']}.{extension}"
     pp_extension = row['profile_picture_extension']
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{row['username'].lower()}.{pp_extension}"
+    title = row['title'] if len(row['title']) <= 13 else row['title'][:13] + '...'
     image = {'username': row['username'],
-             'title': row['title'],
+             'title': title,
+             'title_full': row['title'],
              'extension': f"{extension}",
              'uri': f"data:image/{extension};base64,{download_blob_data(container, image_path)}",
              'token_id': row['token_id'],
@@ -85,9 +89,11 @@ def build_resale_images(row: Series, my: bool, nsfw: bool) -> dict:
     image_path = f"{row['creator'].lower()}/{row['swarm_hash']}.{extension}"
     pp_extension = row['profile_picture_extension']
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{row['creator'].lower()}.{pp_extension}"
+    title = row['title'] if len(row['title']) <= 13 else row['title'][:13] + '...'
     image = {'seller': row['seller'],
              'username': row['creator'],
-             'title': row['title'],
+             'title': title,
+             'title_full': row['title'],
              'extension': f"{row['extension']}",
              'uri': f"data:image/{extension};base64,{download_blob_data(container, image_path)}",
              'token_id': row['token_id'],
