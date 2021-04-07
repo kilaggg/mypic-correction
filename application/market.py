@@ -202,8 +202,8 @@ def get_new_images(page: int, nsfw: bool, username: str = None, email: str = Non
     df.sort_values('end_date', inplace=True)
     if username is not None:
         df = df[df['username'].str.lower() == username.lower()]
-    if email is not None:
-        df = df[df['username'].str.lower() != get_username_from_email(email).lower()]
+    # if email is not None:
+    #     df = df[df['username'].str.lower() != get_username_from_email(email).lower()]
     df.reset_index(inplace=True)
     df = df.loc[page * NUMBER_PRINT_IMAGE:(page + 1) * NUMBER_PRINT_IMAGE - 1]
     num_cores = multiprocessing.cpu_count()
@@ -219,8 +219,8 @@ def get_resale(page: int, nsfw: bool, username: str = None, email: str = None, f
     df.sort_values('price', inplace=True)
     if username is not None:
         df = df[df['seller'].str.lower() == username.lower()]
-    if email is not None:
-        df = df[df['seller'].str.lower() != get_username_from_email(email).lower()]
+    # if email is not None:
+    #     df = df[df['seller'].str.lower() != get_username_from_email(email).lower()]
     df.reset_index(inplace=True)
     df = df.loc[page * NUMBER_PRINT_IMAGE:(page + 1) * NUMBER_PRINT_IMAGE - 1]
     num_cores = multiprocessing.cpu_count()
