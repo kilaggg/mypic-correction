@@ -17,7 +17,7 @@
     <div id="account-nav">
         <button id="parameter-button">Parameters</button>
         <button id="algo-button">Wallet</button>
-        <button id="notifications-button">Notifications</button>
+        <!--<button id="notifications-button">Notifications</button>-->
     </div>
 
     <div id="parameter-page">
@@ -58,7 +58,7 @@
             <div class="break-all-word">You are connected with the address: {{user.address}} </div>
         {% endif %}
     </div>
-
+<!--
     <div id="notifications-page">
         <p>Optin for email notifications.</p>
         <div id="notifications">
@@ -73,9 +73,9 @@
         </div>
     </div>
 </div>
-
+-->
 <script>
-    let Subpage = ["parameter", "algo", "notifications"];
+    let Subpage = ["parameter", "algo"];
 
     for (let x of Subpage) {
         document.getElementById(x + "-button").addEventListener("click", () => {
