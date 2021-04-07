@@ -16,6 +16,10 @@
     font-family: 'Open Sans', sans-serif;
 }
 
+textarea { 
+    resize: vertical; 
+}
+
 .logo {
     position: relative;
     color: var(--lead-color);
@@ -500,6 +504,7 @@ Gallery: Picture
     border: 1px solid var(--outline-color);
     border-radius: 16px;
     overflow: hidden;
+    margin: 3px;
 }
 
 .picture-user {
@@ -555,6 +560,9 @@ Gallery: Picture
     grid-area: form;
     text-align: right;
     margin-right: 8px;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
 .picture-photo {
@@ -630,6 +638,7 @@ Gallery: Picture
     max-width: 800px;
     height: auto;
     max-height: 500px;
+    margin: initial;
 }
 
 .modal button.close {
@@ -642,9 +651,43 @@ Gallery: Picture
     top: 50px;
 }
 
+.modal-user {
+    text-align: left;
+    padding: 8px;
+}
+
+.modal-username {
+    display: inline;
+    color: var(--base-color);
+    text-align: left;
+    padding-left: 10px;
+    position: relative;
+    top: -17px;
+}
+
+.modal-pp {
+    display: inline-block;
+    background-size: cover;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+}
+
 .modal-title {
+    text-align: right;
+    font-weight: bolder;
+    font-size: larger;
     color: var(--lead-color);
     text-align: center;
+    padding-right: 8px;
+}
+
+.modal .image-infos {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--background);
+    padding: 5px;
+    width: 250px;
 }
 
 
@@ -697,7 +740,6 @@ Market
 #market #create-form {
     display: grid;
     grid-template-columns: auto auto;
-    grid-auto-rows: 34px;
     gap: 8px 5px;
 }
 
@@ -713,6 +755,11 @@ Market
 
 
 #market #create-form > input {
+    width: 150px;
+    grid-column: 2;
+}
+
+#market #create-form > textarea {
     width: 150px;
     grid-column: 2;
 }
@@ -743,7 +790,7 @@ Market
 #market.preview #create-form > img {
     display: initial;
     grid-column: 3;
-    grid-row: 1 span 5;
+    grid-row: 1/span 9;
     justify-self: center;
     max-height: 250px;
     max-width: 250px;

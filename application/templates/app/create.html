@@ -24,7 +24,7 @@
         <input type="text" placeholder="Title" name="title" minlength="1" maxlength="30" required>
 
         <label for="description">Description:</label>
-        <input type="text" placeholder="Description" name="description" minlength="0" maxlength="255">
+        <textarea type="text" placeholder="Description" name="description" minlength="0" maxlength="255"></textarea>
 
         <label for="private">Private:</label>
         <label class="switch">
@@ -85,6 +85,10 @@
         formData.append("file", files[0]);
 
         document.querySelectorAll("#create-form input:not(#file-selector):not(input[type='checkbox'])").forEach(function (input) {
+            formData.append(input.name, input.value);
+        });
+
+        document.querySelectorAll("textarea").forEach(function (input) {
             formData.append(input.name, input.value);
         });
         document.querySelectorAll("#create-form input[type='checkbox']").forEach(function (input) {

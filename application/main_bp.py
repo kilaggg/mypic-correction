@@ -363,6 +363,8 @@ def market() -> str:
             price = int(request.form['price'])
             royalties = int(request.form['royalties'])
             description = request.form['description']
+            if description is None:
+                description = ''
             end_date = datetime.utcnow() + timedelta(hours=int(request.form['duration']))
             public = 0 if request.form['private'] == 'on' else 1
             nsfw = 0 if request.form['nsfw'] == 'off' else 1

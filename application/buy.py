@@ -8,7 +8,7 @@ from application.smart_contract import (
     verify_buy_transaction,
     wait_for_confirmation
 )
-from application.user import get_address_of_resale, get_royalties
+from application.user import get_address_from_username, get_address_of_resale, get_royalties, get_username_of_token
 import json
 
 
@@ -55,13 +55,21 @@ def manage_buy(form, username):
                     tx_swap_id = send_transactions(dict_buy[note])
                     tx_swap_info = wait_for_confirmation(tx_swap_id)
                     owner_address = get_address_of_resale(token_id)
+                    creator_username = get_username_of_token(token_id)
+                    creator_address = get_address_from_username(creator_username)
                     royalties = get_royalties(token_id)
                     price_owner = int(price * (100 - royalties) * 10000)
+                    price_creator = int(price * royalties * 10000)
                     print("price owner", price_owner)
+                    print("price creator", price_creator)
                     tx_owner_id = transfer_algo_to_user(owner_address, price_owner)
+                    if price_creator > 0:
+                        tx_creator_id = transfer_algo_to_user(creator_address, price_creator)
+                        tx_creator_info = wait_for_confirmation(tx_creator_id)
+                    else:
+                        tx_creator_info = True
                     tx_owner_info = wait_for_confirmation(tx_owner_id)
-                    # creator_address =
-                    if bool(tx_swap_info.get('confirmed-round')) & bool(tx_owner_info.get('confirmed-round')):
+                    if bool(tx_swap_info.get('confirmed-round')) & bool(tx_owner_info.get('confirmed-round')) & bool(tx_creator_info.get('confirmed-round')):
                         execute_buy(token_id)
                         dict_buy.pop(note, None)
                         return "Buy done"

@@ -9,9 +9,9 @@ def contact() -> str:
     return render_template('help/contact.html')
 
 
-@bp.route('/data_policy', methods=('GET', 'POST'))
+@bp.route('/faq', methods=('GET', 'POST'))
 def data_policy() -> str:
-    return render_template('help/data_policy.html')
+    return render_template('help/faq.html')
 
 
 @bp.route('/term_of_use')

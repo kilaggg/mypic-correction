@@ -254,7 +254,7 @@ function addModal(image, page) {
 
     let title = document.createElement("h1");
     title.classList.add("modal-title");
-    title.innerText = image.title_full;
+    title.innerText = image.token_id + ": " + image.title_full;
     modal_header.append(title);
 
     let modal_body = document.createElement("div");
@@ -263,7 +263,31 @@ function addModal(image, page) {
 
     let img = document.createElement("img");
     img.setAttribute("src", image.uri);
-    modal_body.append(img);
+    modal_body.appendChild(img);
+
+    let img_infos = document.createElement("div");
+    img_infos.classList.add("image-infos");
+    modal_body.appendChild(img_infos);
+
+    let user = document.createElement("a");
+    user.setAttribute("href", "/gallery/" + image.username);
+    user.classList.add("modal-user");
+    img_infos.append(user);
+
+    let pp = document.createElement("div");
+    pp.classList.add("modal-pp");
+    pp.setAttribute("style", "background-image:url(" + image.pp + ")");
+    user.appendChild(pp);
+
+    let username = document.createElement("div");
+    username.innerText = image.username;
+    username.classList.add("modal-username");
+    user.appendChild(username);
+
+    let description = document.createElement("div");
+    description.classList.add("image-description");
+    description.innerText = image.description;
+    img_infos.appendChild(description);
 
     let modal_footer = document.createElement("div");
     modal_footer.classList.add("modal-footer");

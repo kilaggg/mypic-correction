@@ -88,13 +88,6 @@ def get_royalties(token_id: int) -> Optional[int]:
     return None
 
 
-def get_username_of_resale(token_id: int) -> Optional[str]:
-    if token_id_in_resale(token_id):
-        query = f"SELECT username FROM {SCHEMA}.{RESELL_TABLE_NAME} WHERE token_id='{token_id}'"
-        return SqlManager().query_df(query).loc[0, 'username']
-    return None
-
-
 def get_followers_from_username(username: str) -> Optional[int]:
     if username_in_db(username):
         query = f"SELECT count(*) as total_followers " \
@@ -162,6 +155,20 @@ def get_stars_from_follower(follower: str):
 def get_username_from_email(email: str) -> Optional[str]:
     if email_in_db(email):
         query = f"SELECT username FROM {SCHEMA}.{ACCOUNT_TABLE_NAME} WHERE email='{email}'"
+        return SqlManager().query_df(query).loc[0, 'username']
+    return None
+
+
+def get_username_of_resale(token_id: int) -> Optional[str]:
+    if token_id_in_resale(token_id):
+        query = f"SELECT username FROM {SCHEMA}.{RESELL_TABLE_NAME} WHERE token_id='{token_id}'"
+        return SqlManager().query_df(query).loc[0, 'username']
+    return None
+
+
+def get_username_of_token(token_id: int) -> Optional[str]:
+    if token_is_exist(token_id):
+        query = f"SELECT username FROM {SCHEMA}.{TOKEN_TABLE_NAME} WHERE token_id='{token_id}'"
         return SqlManager().query_df(query).loc[0, 'username']
     return None
 
