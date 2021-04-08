@@ -1,7 +1,7 @@
 from application import app, auth_bp, main_bp, help_bp
 from application.user import jti_in_blacklist
 from datetime import datetime, timedelta, timezone
-from flask import flash, redirect, url_for
+from flask import flash, redirect, request, url_for
 from flask_jwt_extended import create_access_token, get_jwt_identity, get_raw_jwt, JWTManager, set_access_cookies
 
 
@@ -18,11 +18,6 @@ app.config["JWT_REFRESH_TOKEN_EXPIRES"] = timedelta(hours=12)
 jwt = JWTManager(app)
 
 
-# @app.route("/")
-# def hello():
-#     return redirect(url_for('auth.auth_feed'))
-
-
 @jwt.expired_token_loader
 def my_expired_token_callback():
     return redirect(url_for('auth.login'))
@@ -37,6 +32,8 @@ def my_token_in_blacklist_callback(jwt_payload):
 @jwt.unauthorized_loader
 def my_unauthorized_callback(callback):
     flash(callback)
+    if 'gallery' in request.url and len(request.url.split('/')) == 5:
+        return redirect(request.url.replace('gallery', 'visit'))
     return redirect(url_for('auth.login'))
 
 

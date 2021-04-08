@@ -1,0 +1,39 @@
+{% extends '/app/unauth/unauth_app.html' %}
+{% set active_page = "gallery_nav" %}
+{% set sideFooter = True %}
+{% block content %} 
+<div id="my-gallery">
+    <div class="gallery-header">
+        <div class="pp" style="background-image: url({{ user.profile_picture }})"></div>
+        <div class="user-presentation">
+            <h1> {{ user.fullname }} </h1>
+            <h2> @{{ user.username }} </h2>
+            <h3> {{ user.followers }} followers</h3>
+        </div>
+    </div>
+    <div id="gallery-nav" class="images-gallery-nav">
+        <button id="my-pics_button" class="selected">Pics</button>
+        <button id="my-sell_button">Sale</button>
+        <button id="my-resale_button">Resale</button>
+    </div>
+    <div id="my-pics_div" class="images-gallery"></div>
+    <div id="my-sell_div" class="images-gallery hidden"></div>
+    <div id="my-resale_div" class="images-gallery hidden"></div>
+    <div class="lds-ring hidden loading">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='/js/countdown.js') }}"></script>
+<script src="{{ url_for('static', filename='/js/bid_buy.js') }}"></script>
+<script src="{{ url_for('static', filename='/js/displayGallery.js') }}"></script>
+
+<script>
+    let USERNAME = window.location.href.split("visit")[1];
+    initGallery("visit" + USERNAME, ["my-pics", "my-sell", "my-resale"], {"my-pics": "They do not have images.", "my-sell": "They have no sell", "my-sell": "They have no resale" }, {"my-pics": "", "my-sell": "preview_bid", "my-resale": "preview_buy" });
+</script>
+
+{% endblock %}

@@ -119,42 +119,36 @@ function displayImage(page, image, type) {
             sell(image.token_id, price, MainPage);
         })
         form.appendChild(submit);
-    } else if (type == "preview") {
-        let price = document.createElement("div");
-        price.classList.add("picture-bid")
-        price.innerText = image.min_price;
-        form.appendChild(price);
+    } else if (type == "bid" || type == "preview_bid") {
+        if (type == "bid") {
+            let price = document.createElement("input");
+            price.classList.add("picture-bid")
+            price.setAttribute("type", "number");
+            price.setAttribute("name", "price");
+            price.setAttribute("min", image.min_price);
+            price.setAttribute("value", image.min_price);
+            form.appendChild(price);
+        } else {
+            let price = document.createElement("div");
+            price.classList.add("picture-bid");
+            price.innerText = image.min_price;
+            form.appendChild(price);
+        }
 
         let algo = document.createElement("div");
         algo.classList.add("algo");
         form.appendChild(algo);
 
-        let countdown = document.createElement("div");
-        countdown.classList.add("picture-countdown");
-        createCountdown(image.end_date.replace(" ", "T"), countdown);
-        picture_div.appendChild(countdown);
-
-    }else if (type == "bid") {
-        let price = document.createElement("input");
-        price.classList.add("picture-bid")
-        price.setAttribute("type", "number");
-        price.setAttribute("name", "price");
-        price.setAttribute("min", image.min_price);
-        price.setAttribute("value", image.min_price);
-        form.appendChild(price);
-
-        let algo = document.createElement("div");
-        algo.classList.add("algo");
-        form.appendChild(algo);
-
-        let submit = document.createElement("button");
-        submit.setAttribute("name", "bid");
-        submit.classList.add("buy-button");
-        submit.addEventListener("click", () => {
-            bid(image.token_id, price, MainPage);
-        });
-        submit.innerText = "Bid";
-        form.appendChild(submit);
+        if (type == "bid") {
+            let submit = document.createElement("button");
+            submit.setAttribute("name", "bid");
+            submit.classList.add("buy-button");
+            submit.addEventListener("click", () => {
+                bid(image.token_id, price, MainPage);
+            });
+            submit.innerText = "Bid";
+            form.appendChild(submit);
+        }
 
         let countdown = document.createElement("div");
         countdown.classList.add("picture-countdown");
@@ -182,16 +176,18 @@ function displayImage(page, image, type) {
             });
             submit.innerText = "Cancel";
             form.appendChild(submit);
-        } else if (type == "buy") {
-            let submit = document.createElement("button");
-            submit.setAttribute("type", "submit");
-            submit.setAttribute("name", "buy");
-            submit.classList.add("buy-button");
-            submit.addEventListener("click", () => {
-                buy(image.token_id, price, MainPage);
-            });
-            submit.innerText = "Buy";
-            form.appendChild(submit);
+        } else if (type == "buy" || type == "preview_buy") {
+            if (type == "buy") {
+                let submit = document.createElement("button");
+                submit.setAttribute("type", "submit");
+                submit.setAttribute("name", "buy");
+                submit.classList.add("buy-button");
+                submit.addEventListener("click", () => {
+                    buy(image.token_id, price, MainPage);
+                });
+                submit.innerText = "Buy";
+                form.appendChild(submit);
+            }
 
             let seller = document.createElement("a");
             seller.classList.add("picture-seller");
@@ -238,6 +234,11 @@ function displayMore(images, page) {
     if(!AskForMore) {
         endPage[page] = true;
     }
+}
+
+function displayFilter(images, page) {
+    document.getElementById(page + "_div").innerHTML = "";
+    displayMore(images, page);
 }
 
 function requestMore(page) {

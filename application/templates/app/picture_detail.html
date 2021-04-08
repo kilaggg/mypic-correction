@@ -1,0 +1,19 @@
+{% extends '/app/base_app.html' %} 
+{% set active_page = "gallery_nav" %}
+{% set sideFooter = False %}
+{% block content %} 
+<div id="picture-detail">
+    <img src="{{ image.src }} ">
+    <div class="picture-infos">
+        <div class="picture-user">
+            <div class="picture-pp" style="background-image: url({{ image.profile_picture }})"></div>
+            <div class="picture-username">{{ image.username }}</div>
+        </div>
+        <div class="picture-bid-history">
+            {% for bid in image.bids %}
+            <div>{{bid.username}}: {{bid.price}}</div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

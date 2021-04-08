@@ -35,13 +35,20 @@
             </span>
         </label>
 
+        <label for="category">Category:</label>
+        <select name="category" id="category">
+            {% for cat in categories %}
+                <option value="{{ cat.value }}">{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+
         <label for="private">NSFW:</label>
-        <label class="switch">
-            <input type="checkbox" name="nsfw">
-            <span class="slider round">
-                <label class="nsfw">🔞</label>
-            </span>
-        </label>
+         <label class="switch">
+             <input type="checkbox" name="nsfw">
+             <span class="slider round">
+                 <label class="nsfw">🔞</label>
+             </span>
+         </label>
         
         <button id="create-button" class="fat">Create Sell</button>
     </div>
@@ -85,6 +92,10 @@
         formData.append("file", files[0]);
 
         document.querySelectorAll("#create-form input:not(#file-selector):not(input[type='checkbox'])").forEach(function (input) {
+            formData.append(input.name, input.value);
+        });
+
+        document.querySelectorAll("select").forEach(function (input) {
             formData.append(input.name, input.value);
         });
 

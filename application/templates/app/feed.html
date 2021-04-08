@@ -3,6 +3,15 @@
 {% set sideFooter = True %}
 {% block content %} 
 <div id="pictures-feed">
+    <!--<div id="category-filter">
+        <label for="category">Category:</label>
+        <select name="category" id="category">
+            {% for cat in categories %}
+            <option value="{{ cat.value }}">{{ cat.name }}</option>
+            {% endfor %}
+        </select>
+    </div>-->
+
     <div id="pictures-feed-nav" class="images-gallery-nav">
         <button id="new_button" class="selected" >New Images</button>
         <button id="resale_button">Resale</button>
@@ -25,7 +34,29 @@
 <script src="{{ url_for('static', filename='/js/displayGallery.js') }}"></script>
 <script>
     initGallery("feed", ["new", "resale"], {"new": "No new images", "resale": "No resale images"}, {"new": "bid", "resale": "buy" });
-/*
+    /*
+    document.getElementById("category-filter").addEventListener("change", () => {
+        var http = new XMLHttpRequest();
+        http.open('POST', '/create', true);
+
+        var formData = new FormData();
+
+        let filter = document.querySelector("#category-filter select");
+        formData.append(filter.name, filter.value);
+
+        formData.append("filter", "");
+
+        http.onreadystatechange = function () {
+            if (http.readyState == 4 && http.status == 200) {
+                let parsed = JSON.parse(http.responseText);
+                if (parsed.status == 404) {
+                    displayFilter(JSON.parse(http.responseText).pictures, currentPage);
+                }
+            }
+        }
+        http.send(formData);
+    });
+
     let socket = io();
     socket.on('new', function (msg) {
         try {

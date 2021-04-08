@@ -55,6 +55,7 @@ import re
 bp = Blueprint('main', __name__, url_prefix='')
 REGEX_TITLE_IMAGE = "^[a-zA-Z0-9 ]*$"
 REGEX_DESCRIPTION_IMAGE = "^[a-zA-Z0-9 .,]*$"
+CATEGORIES = [{"value": "default", "name": "Default"}, {"value": "animal", "name": "Animal"}, {"value": "art", "name": "Art"}, {"value": "body_art", "name": "Body Art"}, {"value": "city", "name": "City"}, {"value": "landscape", "name": "Landscape"}, {"value": "meme", "name": "Meme"}, {"value": "movie", "name": "Movie"}, {"value": "other", "name": "Other"}, {"value": "pixel_art", "name": "Pixel Art"}, {"value": "sport", "name": "Sport"}]
 
 
 @bp.route('/account', methods=('GET', 'POST'))
@@ -127,6 +128,7 @@ def account() -> str:
 def feed() -> str:
     page = 'feed' if request.endpoint == 'main.v2' else 'favorites'
     if request.method == 'POST':
+        print(request.form)
         if "more" in request.form:
             email = get_jwt_identity()['email']
             nsfw = get_nsfw_from_email(email)
@@ -153,7 +155,7 @@ def feed() -> str:
         return "no api"
     session[f'{page}_number_new'] = 0
     session[f'{page}_number_resale'] = 0
-    return render_template(f'app/{page}.html')
+    return render_template(f'app/{page}.html', categories=CATEGORIES)
 
 
 @bp.route('/gallery', methods=('GET', 'POST'))
@@ -299,7 +301,45 @@ def gallery_navigation(username: str) -> str:
             'followers': str(followers),
             'fullname': fullname,
             'is_follow': is_follow_int}
-    return render_template("app/gallery_navigation.html", user=user)
+    return render_template("app/gallery_navigation.html", user=user, authorized=True)
+
+
+@bp.route('/visit/<username>', methods=('GET', 'POST'))
+def gallery_visit(username: str) -> str:
+    if request.method == 'POST':
+        is_public = get_is_public_from_username(username)
+        if "more" in request.form:
+            address = get_address_from_username(username)
+            if request.form["more"] == "my-pics":
+                data_my_gallery = get_image_from_address(address, session.get('number_visit_gallery'), is_public, False)
+                session['number_visit_gallery'] = session.get('number_visit_gallery') + 1
+                return json.dumps({"pictures": data_my_gallery})
+
+            if request.form["more"] == "my-sell":
+                data_new_images = get_new_images(session.get('number_visit_new_image'), False, username=username)
+                session['number_visit_new_image'] = session.get('number_visit_new_image') + 1
+                return json.dumps({"pictures": data_new_images})
+
+            if request.form["more"] == "my-resale":
+                resale_images = get_resale(session.get('number_visit_resale'), False, username=username)
+                session['number_visit_resale'] = session.get('number_visit_resale') + 1
+                return json.dumps({"pictures": resale_images})
+
+    session['number_visit_gallery'] = 0
+    session['number_visit_new_image'] = 0
+    session['number_visit_resale'] = 0
+    pp_extension = get_profile_picture_extension_from_username(username)
+    pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
+    profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
+    followers = get_followers_from_username(username)
+    fullname = get_fullname_from_username(username)
+    is_follow_int = 0
+    user = {'username': username,
+            'profile_picture': f"data:{pp_extension};base64,{profile_picture}",
+            'followers': str(followers),
+            'fullname': fullname,
+            'is_follow': is_follow_int}
+    return render_template("app/unauth/gallery_navigation.html", user=user, authorized=False)
 
 
 @bp.route('/create', methods=('GET', 'POST'))
@@ -319,6 +359,8 @@ def market() -> str:
             error = "Duration is required."
         if 'private' not in request.form:
             error = "Private is required."
+        if 'category' not in request.form:
+            error = "Category is required."
         if 'nsfw' not in request.form:
             error = "NSFW is required."
         if 'royalties' not in request.form:
@@ -370,11 +412,12 @@ def market() -> str:
             end_date = datetime.utcnow() + timedelta(hours=int(request.form['duration']))
             public = 0 if request.form['private'] == 'on' else 1
             nsfw = 0 if request.form['nsfw'] == 'off' else 1
-            token_id = create_new_image(username, file, title, price, end_date, public, nsfw, royalties, description)
+            category = request.form['category']
+            token_id = create_new_image(username, file, title, price, end_date, public, nsfw, royalties, description, category)
             return json.dumps({'status': 200,
                                'token_id': token_id})
         return json.dumps({'status': 404, 'e': error})
-    return render_template('app/create.html')
+    return render_template('app/create.html', categories=CATEGORIES)
 
 
 @bp.route('/wallet_installed', methods=('GET', 'POST'))

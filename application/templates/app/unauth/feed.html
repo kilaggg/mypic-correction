@@ -1,15 +1,6 @@
-{% extends '/base.html' %}
-{% block body %}
+{% extends '/app/unauth/unauth_app.html' %}
+{% block content %}
 {% set sideFooter = False %}
-<nav id="navbar">
-    <a href="/gallery">
-        <div class="logo">MyPic</div>
-    </a>
-    <div class="spacer"></div>
-    <a href="/login">Login</a>
-    <a href="/register">Register</a>
-
-</nav>
 <div id="reception">
     <div id="new_div" class="images-gallery"></div>
     
@@ -24,6 +15,6 @@
 <script src="{{ url_for('static', filename='/js/bid_buy.js') }}"></script>
 <script src="{{ url_for('static', filename='/js/displayGallery.js') }}"></script>
 <script>
-    initGallery("", ["new"], {"new": "No new images"}, {"new": "preview"}, false);
+    initGallery("", ["new"], {"new": "No new images"}, {"new": "preview_bid"}, false);
 </script>
 {%endblock%}

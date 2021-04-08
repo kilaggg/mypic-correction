@@ -249,4 +249,4 @@ def auth_feed() -> str:
     if request.method == 'POST' and "more" in request.form:
         data_new_images = get_new_images_home()
         return json.dumps({"pictures": data_new_images})
-    return render_template('auth/auth_feed.html')
+    return render_template('app/unauth/feed.html')

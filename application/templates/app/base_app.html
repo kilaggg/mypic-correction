@@ -2,31 +2,10 @@
 {% if sideFooter is not defined%}
 {% set sideFooter = False %}
 {% endif %}
-
-<script src="{{ url_for('static', filename='/js/tooltip.js') }}"></script>
 <script src="{{ url_for('static', filename='/js/algo.js') }}"></script>
 <script>
-    var isChromium = window.chrome;
-    var winNav = window.navigator;
-    var vendorName = winNav.vendor;
-    var isOpera = typeof window.opr !== "undefined";
-    var isIEedge = winNav.userAgent.indexOf("Edge") > -1;
-    var isIOSChrome = winNav.userAgent.match("CriOS");
-
-    if (isIOSChrome) {
-    // is Google Chrome on IOS
-    } else if(
-    isChromium !== null &&
-    typeof isChromium !== "undefined" &&
-    vendorName === "Google Inc." &&
-    isOpera === false &&
-    isIEedge === false
-    ) {
-        if (typeof AlgoSigner === 'undefined') {
-            displayStatusBar("Please use the AlgoSigner Chrome extension to interact with MyPic")
-        }
-    } else { 
-        displayStatusBar("Please use the Chrome browser with AlgoSigner extension to interact with MyPic")
+    if (typeof AlgoSigner === 'undefined') {
+        displayStatusBar("Please use the AlgoSigner Chrome extension to interact with MyPic")
     }
 
     function displayStatusBar(message) {

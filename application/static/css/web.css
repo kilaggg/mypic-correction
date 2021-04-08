@@ -510,7 +510,7 @@ Gallery: Picture
 .picture-user {
     grid-area: user;
     text-align: left;
-    padding: 8px;
+    padding-left: 8px;
 }
 
 .picture-username {
@@ -759,12 +759,7 @@ Market
 }
 
 
-#market #create-form > input {
-    width: 150px;
-    grid-column: 2;
-}
-
-#market #create-form > textarea {
+#market #create-form > input,textarea,select {
     width: 150px;
     grid-column: 2;
 }
