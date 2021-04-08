@@ -66,10 +66,11 @@ def manage_buy(form, username):
                     if price_creator > 0:
                         tx_creator_id = transfer_algo_to_user(creator_address, price_creator)
                         tx_creator_info = wait_for_confirmation(tx_creator_id)
+                        tx_creator_info_bool = bool(tx_creator_info.get('confirmed-round'))
                     else:
-                        tx_creator_info = True
+                        tx_creator_info_bool = True
                     tx_owner_info = wait_for_confirmation(tx_owner_id)
-                    if bool(tx_swap_info.get('confirmed-round')) & bool(tx_owner_info.get('confirmed-round')) & bool(tx_creator_info.get('confirmed-round')):
+                    if bool(tx_swap_info.get('confirmed-round')) & bool(tx_owner_info.get('confirmed-round')) & tx_creator_info_bool:
                         execute_buy(token_id)
                         dict_buy.pop(note, None)
                         return "Buy done"
