@@ -13,12 +13,12 @@
     </div>
     <div id="gallery-nav" class="images-gallery-nav">
         <button id="my-pics_button" class="selected">Pics</button>
-        <button id="my-sell_button">Sale</button>
-        <button id="my-resale_button">Resale</button>
+        <button id="my-auctions_button">Auctions</button>
+        <button id="my-resales_button">Resales</button>
     </div>
     <div id="my-pics_div" class="images-gallery"></div>
-    <div id="my-sell_div" class="images-gallery hidden"></div>
-    <div id="my-resale_div" class="images-gallery hidden"></div>
+    <div id="my-auctions_div" class="images-gallery hidden"></div>
+    <div id="my-resales_div" class="images-gallery hidden"></div>
     <div class="lds-ring hidden loading">
         <div></div>
         <div></div>
@@ -27,13 +27,12 @@
     </div>
 </div>
 
-<script src="{{ url_for('static', filename='/js/countdown.js') }}"></script>
-<script src="{{ url_for('static', filename='/js/bid_buy.js') }}"></script>
-<script src="{{ url_for('static', filename='/js/displayGallery.js') }}"></script>
+
+<script src="{{ url_for('static', filename='/js/Gallery.js') }}"></script>
 
 <script>
     let USERNAME = window.location.href.split("visit")[1];
-    initGallery("visit" + USERNAME, ["my-pics", "my-sell", "my-resale"], {"my-pics": "They do not have images.", "my-sell": "They have no sell", "my-sell": "They have no resale" }, {"my-pics": "", "my-sell": "preview_bid", "my-resale": "preview_buy" });
+    new Gallery("visit" + USERNAME, ["my-pics", "my-auctions", "my-resales"], {"my-pics": "They do not have images.", "my-auctions": "They have no sell", "my-resales": "They have no resale" }, {"my-pics": GALLERY_KIND.DEFAULT, "my-auctions": GALLERY_KIND.PREVIEW_BID, "my-resales": GALLERY_KIND.PREVIEW_BUY });
 </script>
 
 {% endblock %}

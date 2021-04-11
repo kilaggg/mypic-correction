@@ -5,25 +5,26 @@ from application.smart_contract import (
     list_account_assets,
     mint_official_nft,
     transfer_nft_to_user,
+    verify_get_back_nft_transaction,
     wait_for_confirmation
 )
 from application.user import (
     get_address_of_resale,
     get_fullname_from_username,
     get_profile_picture_extension_from_username,
-    get_username_from_email
 )
 from azure.storage.blob import BlobClient
 from datetime import datetime
 from joblib import delayed, Parallel
 from pandas.core.series import Series
-from PIL import Image, ImageFilter
+from PIL import Image, ImageFilter, ImageSequence
 from werkzeug.datastructures import FileStorage
 from werkzeug.utils import secure_filename
 import base64
 import io
 import json
 import multiprocessing
+import numpy as np
 import requests
 
 
@@ -103,6 +104,21 @@ def build_new_image_home(row: Series) -> dict:
     return image
 
 
+def build_nft_back_image(row: Series, pp_extension: str) -> dict:
+    extension = row['extension']
+    image_path = f"{row['username'].lower()}/{row['swarm_hash']}.{extension}"
+    pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{row['username'].lower()}.{pp_extension}"
+    image = {'username': row['username'],
+             'title': row['title'],
+             'title_full': row['title'],
+             'extension': f"{extension}",
+             'uri': f"data:image/{extension};base64,{download_blob_data(IMAGES_CONTAINER, image_path)}",
+             'token_id': row['token_id'],
+             'description': row['description'],
+             'pp': f"data:image/{pp_extension};base64,{download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)}"}
+    return image
+
+
 def build_resale_images(row: Series, my: bool, nsfw: bool) -> dict:
     nsfw = nsfw or not bool(row['is_nsfw'])
     container = IMAGES_CONTAINER if (row['is_public'] or my) and nsfw else BLURRY_IMAGES_CONTAINER
@@ -161,7 +177,7 @@ def create_new_image(username: str, file: FileStorage, title: str, price: int, e
     return token_id
 
 
-def create_resale(username: str, token_id: int, price: int, tx_id: str) -> None:
+def create_resale(username: str, token_id: int, price: int, tx_id: str) -> bool:
     tx_info = wait_for_confirmation(tx_id)
     address = tx_info.get('txn').get('txn').get('snd')
     xaid = tx_info.get('txn').get('txn').get('xaid')
@@ -170,6 +186,8 @@ def create_resale(username: str, token_id: int, price: int, tx_id: str) -> None:
         query = f"INSERT INTO {SCHEMA}.{RESELL_TABLE_NAME} (username, address, token_id, price) " \
                 f"VALUES ('{username}', '{address}', {token_id}, {price})"
         SqlManager().execute_query(query, True)
+        return True
+    return False
 
 
 def download_blob_data(container: str, filename: str):
@@ -216,7 +234,7 @@ def get_image_from_address(address: str, page: int, my: bool, nsfw: bool) -> lis
     return []
 
 
-def get_new_images(page: int, nsfw: bool, username: str = None, email: str = None, follower: str = None, my: bool = False) -> list:
+def get_new_images(page: int, nsfw: bool, username: str = None, follower: str = None, my: bool = False) -> list:
     query = f"SELECT * FROM {SCHEMA}.{NEW_SELL_VIEW_NAME}"
     if follower is not None:
         query += f" WHERE username in (SELECT star FROM [dbo].[FollowersView] WHERE follower='{follower}')"
@@ -244,10 +262,23 @@ def get_new_images_home() -> list:
     return new_images
 
 
-def get_resale(page: int, nsfw: bool, username: str = None, email: str = None, follower: str = None, my: bool = False) -> list:
+def get_nft_back(page: int, username: str):
+    query = f"SELECT * FROM {SCHEMA}.{TOKEN_TABLE_NAME} WHERE username='{username}' AND token_id in (SELECT token_id " \
+            f"FROM {SCHEMA}.{NEW_SELL_TABLE_NAME} WHERE address IS NULL AND done=0 AND end_date < GetUTCDate())"
+    df = SqlManager().query_df(query)
+    df.sort_values('token_id', inplace=True)
+    df.reset_index(inplace=True)
+    df = df.loc[page * NUMBER_PRINT_IMAGE:(page + 1) * NUMBER_PRINT_IMAGE - 1]
+    pp_extension = get_profile_picture_extension_from_username(username)
+    num_cores = multiprocessing.cpu_count()
+    nft_back_images = Parallel(n_jobs=num_cores)(delayed(build_nft_back_image)(row, pp_extension) for _, row in df.iterrows())
+    return nft_back_images
+
+
+def get_resale(page: int, nsfw: bool, username: str = None, follower: str = None, my: bool = False) -> list:
     query = f"SELECT * FROM {SCHEMA}.{RESELL_VIEW_NAME}"
     if follower is not None:
-        query += f" WHERE username in (SELECT star FROM [dbo].[FollowersView] WHERE follower='{follower}')"
+        query += f" WHERE seller in (SELECT star FROM [dbo].[FollowersView] WHERE follower='{follower}')"
     df = SqlManager().query_df(query)
     df.sort_values('price', inplace=True)
     if username is not None:
@@ -261,6 +292,17 @@ def get_resale(page: int, nsfw: bool, username: str = None, email: str = None, f
     return resale_images
 
 
+def send_nft_back(token_id: int, address: str, tx_id: str, username: str) -> bool:
+    if verify_get_back_nft_transaction(tx_id, token_id, username, address):
+        tx_id_nft = transfer_nft_to_user(token_id, address)
+        tx_info_nft = wait_for_confirmation(tx_id_nft)
+        if bool(tx_info_nft.get('confirmed-round')):
+            query = f"UPDATE NewSell set done=1 WHERE token_id={token_id}"
+            SqlManager().execute_query(query, True)
+            return True
+    return False
+
+
 def upload_image_swarm(file: FileStorage, username: str, is_public) -> (str, str):
     image_format = DICTIONARY_FORMAT[secure_filename(file.filename).split('.')[-1].lower()]
     url = SWARM_URL_NODE
@@ -270,17 +312,31 @@ def upload_image_swarm(file: FileStorage, username: str, is_public) -> (str, str
         headers = {"content-type": f"image/{image_format}", "Swarm-Encrypt": "true"}
     result = requests.post(url, data=file, headers=headers)
     swarm_hash = json.loads(result.content.decode('utf8'))["reference"]
-    # swarm_hash = result.content.decode('utf8')
     image = Image.open(file)
     output = io.BytesIO()
-    image.save(output, format=image_format)
+    if image_format == 'gif':
+        frames = [np.asarray(im_frame.convert('RGB'))
+                  for im_frame in ImageSequence.Iterator(image)]
+        images = [Image.fromarray(a_frame) for a_frame in np.stack(frames)]
+        images[0].save(output, save_all=True, append_images=images[1:], format='gif', loop=0)
+    else:
+        image.save(output, format=image_format)
     hex_data = output.getvalue()
     blob_client = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, IMAGES_CONTAINER,
                                                     f"{username.lower()}/{swarm_hash[:64]}.{image_format}")
     blob_client.upload_blob(hex_data, overwrite=True)
-    blurry_image = Image.open(file).filter(ImageFilter.BoxBlur(50))
+
     blurry_output = io.BytesIO()
-    blurry_image.save(blurry_output, format=image_format)
+    if image_format == 'gif':
+        im = Image.open(file)
+        frames = [np.asarray(im_frame.convert('RGB').filter(ImageFilter.BoxBlur(50)))
+                  for im_frame in ImageSequence.Iterator(im)]
+        blurry_images = [Image.fromarray(a_frame) for a_frame in np.stack(frames)]
+
+        blurry_images[0].save(blurry_output, save_all=True, append_images=blurry_images[1:], format='gif', loop=0)
+    else:
+        blurry_image = Image.open(file).filter(ImageFilter.BoxBlur(50))
+        blurry_image.save(blurry_output, format=image_format)
     blurry_hex_data = blurry_output.getvalue()
     blurry_blob_client = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, BLURRY_IMAGES_CONTAINER,
                                                            f"{username.lower()}/{swarm_hash[:64]}.{image_format}")

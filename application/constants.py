@@ -18,7 +18,29 @@ SWARM_ENCRYPT_TABLE_NAME = "SwarmEncrypt"
 DICTIONARY_FORMAT = {
     'png': 'png',
     'jpeg': 'jpeg',
-    'jpg': 'jpeg'
+    'jpg': 'jpeg',
+    'gif': 'gif'
 }
 
 PROFILE_PICTURES_CONTAINER = "profile"
+
+# Error
+MISSING_ARGUMENT = "Missing Argument"
+WRONG_ARGUMENT = "Wrong Argument"
+WRONG_REQUEST = "Wrong Request"
+WRONG = "Something went wrong"
+NO_API = "No API"
+SYSTEM_ERROR = "System Error"
+TRANSACTION_ERROR = "Transaction Error"
+
+# message
+TRANSACTION_STARTED = "Transaction Started"
+TRANSACTION_IN_PROGRESS = "Transaction in Progress"
+TRANSACTION_DONE = "Transaction Done"
+UPDATE_DONE = "Update Done"
+CREATION_DONE = "Creation Done"
+LOAD_DONE = "Load Done"
+
+# ALGO CONVERTER
+CONVERT_TO_MICRO = 1000000
+PRICE_GET_BACK = 200000

@@ -11,10 +11,9 @@
         <div></div>
     </div>
 </div>
-<script src="{{ url_for('static', filename='/js/countdown.js') }}"></script>
-<script src="{{ url_for('static', filename='/js/bid_buy.js') }}"></script>
-<script src="{{ url_for('static', filename='/js/displayGallery.js') }}"></script>
+
+<script src="{{ url_for('static', filename='/js/Gallery.js') }}"></script>
 <script>
-    initGallery("", ["new"], {"new": "No new images"}, {"new": "preview_bid"}, false);
+    new Gallery("", ["new"], {"new": "No new images"}, {"new": GALLERY_KIND.PREVIEW_BID}, false);
 </script>
 {%endblock%}

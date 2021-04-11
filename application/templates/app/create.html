@@ -6,7 +6,7 @@
         {% with messages = get_flashed_messages() %} {% if messages %} <span class=errors> {{ messages[-1] }} </span> {% endif %} {% endwith %}
         <span class="file-selector-styled">
             <label for="file-selector"> Click to upload image </label>
-            <input type="file" id="file-selector" name="file" accept=".jpg, .jpeg, .png" required>
+            <input type="file" id="file-selector" name="file" accept=".jpg, .jpeg, .png, .gif" required>
         </span>
         <img id="preview_sell_market" src="#" alt="Please seleact an image."/>
 
@@ -111,24 +111,15 @@
             if (http.readyState == 4 && http.status == 200) {
                 let parsed = JSON.parse(http.responseText);
                 if (parsed.status == 404) {
-                    addTooltip("Creation failled", parsed.e);
+                    addTooltip(parsed.e, parsed.e_full);
                 } else if (parsed.status == 200) {
-                    addTooltip("Creation done, redirecting you to your gallery", "");
+                    addTooltip(parsed.message, "");
                     setTimeout(() => {
-                            localStorage.setItem("page", "my-sell");
-                            window.location.href = "/gallery";
+                            window.location.href = "/gallery#my-auctions";
                         }, 4000);
-                    /*AlgoCreateNFT(parsed.token_id, (from, tx, signedTx) => {
-                        let http2 = new XMLHttpRequest();
-                        http2.open('POST', '/create', true);
-
-                        let formData2 = new FormData();
-                        formData2.append("validate", "");
-                        formData2.append("token_id", parsed.token_id);
-                        formData2.append("address", from);
-                        http2.send(formData2);
-                    });*/
                 }
+            } else if (http.readyState == 4 && http.status == 500) {
+                addTooltip("Creation failed", "Please retry, if the error persits send us an email.");
             }
         }
         http.send(formData);

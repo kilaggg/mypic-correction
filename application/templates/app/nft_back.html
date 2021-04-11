@@ -1,0 +1,21 @@
+{% extends '/app/base_app.html' %} 
+{% set active_page = "nft_back_nav" %}
+{% set sideFooter = True %}
+{% block content %} 
+<div id="get-nft-back">
+    <div id="nft_div" class="images-gallery"></div>
+    <div class="lds-ring hidden loading">
+        <div></div>
+        <div></div>
+        <div></div>
+        <div></div>
+    </div>
+</div>
+
+
+<script src="{{ url_for('static', filename='/js/Contract.js') }}"></script>
+<script src="{{ url_for('static', filename='/js/Gallery.js') }}"></script>
+<script>
+    new Gallery("nft_back", ["nft"], {"nft": "You do not have any pictures to get back." }, {"nft": GALLERY_KIND.GET_BACK });
+</script>
+{% endblock %}

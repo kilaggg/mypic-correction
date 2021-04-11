@@ -25,6 +25,7 @@ textarea {
     color: var(--lead-color);
     font-family: 'Caveat', cursive;
     font-size: xx-large;
+    margin-right: 10px;
 }
 
 .logo::before {
@@ -342,6 +343,12 @@ NavBar
 
 ****/
 
+nav {
+    position: sticky;
+    top: 0;
+    box-shadow: 0 0px 0px 0 rgb(0 0 0 / 20%), 0 0px 4px 0 rgb(0 0 0 / 19%);
+}
+
 #navbar {
     display: flex;
     align-items: center;
@@ -360,6 +367,25 @@ NavBar
 
 #navbar a.active {
     border-bottom: 3px solid var(--dark-base-color);
+}
+
+#navbar a.pp-button {
+    padding: 0;
+    margin: 0;
+}
+
+#navbar .pp {
+    cursor: pointer;
+    box-sizing: border-box;
+    width: 40px;
+    height: 40px;
+    background-size: contain;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+#navbar .pp.active {
+    box-shadow: 0 0 0 1px var(--base-color);
 }
 
 .spacer {
@@ -492,7 +518,7 @@ Gallery: Picture
 
 .picture {
     text-align: center;
-    width: 380px;
+    width: 430px;
     height: 480px;
     display: grid;
     grid-template-rows: 380px 64px 31px;
@@ -563,7 +589,8 @@ Gallery: Picture
     margin-right: 8px;
     display: flex;
     flex-wrap: wrap;
-    justify-content: center;
+    justify-content: flex-end;
+    align-items: center;
 }
 
 .picture-photo {
@@ -691,9 +718,16 @@ Gallery: Picture
     width: 250px;
 }
 
-.modal .description {
+.modal .image-description {
     text-align: justify;
-    text-justify: inter-word;
+    overflow-wrap: anywhere;
+    padding: 10px;
+    font-size: smaller;
+}
+
+.modal .modal-form {
+    display: flex;
+    justify-content: center;
 }
 
 
@@ -1383,4 +1417,45 @@ https://loading.io/css/
 
 .break-all-word {
     word-break: break-word;
+}
+
+/** DropDown **/
+.dropdown {
+    border-radius: 50%;
+    height: 50px;
+    width: 50px;
+    position: relative;
+    display: inline-block;
+}
+  
+.dropdown-content {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top:50px;
+    right: 0px;
+    background-color: #fff;
+    min-width: 90px;
+    box-shadow: 0px 0px 15px 0px rgb(0 0 0 / 20%);
+    padding: 12px 16px;
+    z-index: 1;
+    border-radius: 5px;
+}
+
+.dropdown-content .arrow-head {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    transform: rotate(45deg);
+    background-color: white;
+    top: -6px;
+    right: 19px;
+}
+
+.dropdown-content a {
+    border: none;
+}
+
+.show {
+    display: flex;
 }

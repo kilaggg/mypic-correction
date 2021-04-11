@@ -13,8 +13,8 @@
     </div>-->
 
     <div id="pictures-feed-nav" class="images-gallery-nav">
-        <button id="new_button" class="selected" >New Images</button>
-        <button id="resale_button">Resale</button>
+        <button id="new_button" class="selected" >Auctions</button>
+        <button id="resale_button">Resales</button>
     </div>
     <div id="new_div" class="images-gallery">
     </div>
@@ -29,11 +29,12 @@
 </div>
 
 <!--<script src="{{ url_for('static', filename='/js/socket.io.min.js') }}"></script>-->
-<script src="{{ url_for('static', filename='/js/countdown.js') }}"></script>
-<script src="{{ url_for('static', filename='/js/bid_buy.js') }}"></script>
-<script src="{{ url_for('static', filename='/js/displayGallery.js') }}"></script>
+
+<script src="{{ url_for('static', filename='/js/Contract.js') }}"></script>
+<script src="{{ url_for('static', filename='/js/Gallery.js') }}"></script>
+
 <script>
-    initGallery("feed", ["new", "resale"], {"new": "No new images", "resale": "No resale images"}, {"new": "bid", "resale": "buy" });
+    new Gallery("feed", ["new", "resale"], {"new": "No new images", "resale": "No resale images"}, {"new": GALLERY_KIND.BID, "resale": GALLERY_KIND.BUY });
     /*
     document.getElementById("category-filter").addEventListener("change", () => {
         var http = new XMLHttpRequest();

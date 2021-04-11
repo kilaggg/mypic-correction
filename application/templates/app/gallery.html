@@ -5,13 +5,13 @@
 <div id="my-gallery">
     <div id="gallery-nav" class="images-gallery-nav">
         <button id="my-pics_button" class="selected">My Pics</button>
-        <button id="my-sell_button">My Sale</button>
-        <button id="my-resale_button">My Resale</button>
+        <button id="my-auctions_button">My Auctions</button>
+        <button id="my-resales_button">My Resales</button>
     </div>
     
     <div id="my-pics_div" class="images-gallery"></div>
-    <div id="my-sell_div" class="images-gallery hidden"></div>
-    <div id="my-resale_div" class="images-gallery hidden"></div>
+    <div id="my-auctions_div" class="images-gallery hidden"></div>
+    <div id="my-resales_div" class="images-gallery hidden"></div>
     
     <div class="lds-ring hidden loading">
         <div></div>
@@ -21,11 +21,12 @@
     </div>
 </div>
 
-<script src="{{ url_for('static', filename='/js/countdown.js') }}"></script>
-<script src="{{ url_for('static', filename='/js/bid_buy.js') }}"></script>
-<script src="{{ url_for('static', filename='/js/displayGallery.js') }}"></script>
+
+<script src="{{ url_for('static', filename='/js/Contract.js') }}"></script>
+<script src="{{ url_for('static', filename='/js/Gallery.js') }}"></script>
+
 <script>
-    initGallery("gallery", ["my-pics", "my-sell", "my-resale"], { "my-pics": "You do not have images.", "my-sell": "You have no sell", "my-resale": "You have no resale" }, { "my-pics": "sell", "my-sell": "my-sell", "my-resale": "cancel" });
+    new Gallery("gallery", ["my-pics", "my-auctions", "my-resales"], { "my-pics": "You do not have images.", "my-auctions": "You have no sell", "my-resales": "You have no resale" }, { "my-pics": GALLERY_KIND.SELL, "my-auctions": GALLERY_KIND.SELLING, "my-resales": GALLERY_KIND.CANCEL });
     
 </script>
 {% endblock %}

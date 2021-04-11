@@ -2,11 +2,9 @@
 {% if sideFooter is not defined%}
 {% set sideFooter = False %}
 {% endif %}
-<script src="{{ url_for('static', filename='/js/algo.js') }}"></script>
+{% if not session["installed"] %}
 <script>
-    if (typeof AlgoSigner === 'undefined') {
-        displayStatusBar("Please use the AlgoSigner Chrome extension to interact with MyPic")
-    }
+    displayStatusBar("Please use the AlgoSigner Chrome extension to interact with MyPic")
 
     function displayStatusBar(message) {
         let statusBar = document.createElement("div");
@@ -26,7 +24,7 @@
             });
     } 
 </script>
-
+{%endif%}
 <nav id="navbar">
     <a href="/gallery">
         <div class="logo">MyPic</div>
@@ -35,10 +33,10 @@
     {% set navigation_bar = [ 
         ('/create', 'create_nav', 'Create'), 
         ('/feed', 'feed_nav', 'Feed'), 
-        ('/favorites', 'favorites_nav', 'Favorites'),
         ('/gallery', 'gallery_nav', 'Gallery'),
-        ('/account', 'account_nav', 'Account')
-    ] -%} 
+        ('/nft_back', 'nft_back_nav', 'Claim your NFT'),
+        ('/favorites', 'favorites_nav', 'Favorites')
+    ] -%}
     {% set active_page = active_page|default('index') -%}
     
     {% for href, id, caption in navigation_bar %} 
@@ -47,7 +45,37 @@
 
     <div class="spacer"></div>
 
-    <a href="/logout">Logout</a>
+    <div class="dropdown" >
+        <button onclick="dropdown()" class="pp-button">
+            <div id="pp-button-pp" class="pp {% if active_page=='account_nav' %}active{% endif %}" {% if not active_page=='account_nav' %}onclick="setactive()"{% endif %} style="background-image: url('{{ pp }}')">
+            </div>
+        </button>
+        <div id="dropdown-menu" class="dropdown-content">
+            <div class="arrow-head"></div>
+            <a href="/account">Account</a>
+            <a href="/logout">Log Out</a>
+        </div>
+    </div>
 </nav>
+<script>
+    function dropdown() {
+        document.getElementById("dropdown-menu").classList.toggle("show");
+    }
+    function setactive() {
+        document.getElementById("pp-button-pp").classList.toggle("active");
+    }
+
+    window.onclick = function(event) {
+        if (!event.target.matches('.pp')) {
+            var dropdowns = document.getElementsByClassName("dropdown-content");
+            for (let i = 0; i < dropdowns.length; i++) {
+                let openDropdown = dropdowns[i];
+                if (openDropdown.classList.contains('show')) {
+                    openDropdown.classList.remove('show');
+                }
+            }
+        }
+    }
+</script>
 {% block content %}{% endblock %}
 {% endblock %}

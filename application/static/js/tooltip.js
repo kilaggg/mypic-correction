@@ -15,7 +15,10 @@ function addTooltip(title, text, autoClose = false) {
 
     let tooltipBody = document.createElement("div");
     tooltipBody.classList.add("tooltip-body");
-    if (text != "" && text != undefined) tooltipBody.innerText = text;
+    if (text != "" && text != undefined) {
+        tooltipTitle.innerText = tooltipTitle.innerText + ": ";
+        tooltipBody.innerText = text;
+    }
     tooltip.appendChild(tooltipBody);
 
     if (autoClose) {

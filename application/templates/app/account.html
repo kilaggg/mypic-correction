@@ -71,9 +71,11 @@
 
             <button type="submit" name="update_notifications" id="update_notifications" class="fat">Submit</button>
         </div>
-    </div>
+    </div>-->
 </div>
--->
+
+<script src="{{ url_for('static', filename='/js/Contract.js') }}"></script>
+
 <script>
     let Subpage = ["parameter", "algo"];
 
@@ -92,7 +94,6 @@
 
     function switch_page(page) {
         for (let x of Subpage) {
-            console.log(x)
             if (x == page) {
                 document.getElementById(x + "-page")
                     .classList.remove("hidden");
@@ -154,10 +155,11 @@
             return
         }
 
-        connect((d) => {
+        AlgoSignerAPI.account((_, d) => {
             var http = new XMLHttpRequest();
             http.open('POST', '/wallet_installed', true);
             var formData = new FormData();
+            console.log(d);
             formData.append("wallet", JSON.stringify(d));
 
             http.onreadystatechange = function () {
@@ -198,9 +200,10 @@
         http.send(formData);
     }
 
+    /*
     document.getElementById("update_notifications")
         .addEventListener("click", () => {
             update_notifications();
-    });
+    });*/
 </script>
 {% endblock %}

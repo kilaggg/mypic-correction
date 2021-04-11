@@ -2,9 +2,26 @@ from algosdk import mnemonic, template
 from algosdk.error import AlgodHTTPError
 from algosdk.future.transaction import AssetConfigTxn, AssetTransferTxn, PaymentTxn
 from application import accounts, ADDRESS_ALGO_OURSELF, algod_client, WORD_MNEMONIC
+from application.constants import CONVERT_TO_MICRO, PRICE_GET_BACK
 from binascii import unhexlify
 import base64
 import json
+
+
+def check_algo_for_tx(address: str, micro_algo: int, optin: bool):
+    """
+
+    :param address:
+    :param micro_algo:
+    :param optin: True if token already in account
+    :return:
+    """
+    number_asset = len(algod_client.account_info(address)['assets'])
+    number_algo_freeze = 100000 + 100000 * number_asset
+    number_algo = algod_client.account_info(address)['amount']
+    algo_needed = micro_algo + 1000 + number_algo_freeze + int(not optin) * 101000
+    print("algo needed:", algo_needed, "number_alg", number_algo)
+    return algo_needed <= number_algo
 
 
 def create_resale_smart_contract(micro_price, token_id, buyer_address):
@@ -47,6 +64,16 @@ def list_account_assets(account: str) -> list:
         return []
     asset_list = [account_info['assets'][idx]['asset-id'] for idx, my_account_info in enumerate(account_info['assets'])
                   if account_info['assets'][idx]['amount'] == 1]
+    return asset_list
+
+
+def list_account_assets_all(account: str) -> list:
+    if account is None:
+        return []
+    account_info = algod_client.account_info(account)
+    if 'assets' not in account_info:
+        return []
+    asset_list = [account_info['assets'][idx]['asset-id'] for idx, my_account_info in enumerate(account_info['assets'])]
     return asset_list
 
 
@@ -118,7 +145,7 @@ def transfer_nft_to_user(asset_id, address):
 def verify_bid_transaction(tx_id, price, username, token_id, address):
     try:
         tx_info = wait_for_confirmation(tx_id)
-        tx_price = int(tx_info.get('txn').get('txn').get('amt') / 1000000)
+        tx_price = int(tx_info.get('txn').get('txn').get('amt') / CONVERT_TO_MICRO)
         tx_note = base64.b64decode(tx_info.get('txn').get('txn').get('note')).decode('ascii')
         tx_sender = tx_info.get('txn').get('txn').get('snd')
         tx_receiver = tx_info.get('txn').get('txn').get('rcv')
@@ -134,6 +161,22 @@ def verify_bid_transaction(tx_id, price, username, token_id, address):
 def verify_buy_transaction(tx_id):
     tx_info = wait_for_confirmation(tx_id)
     return bool(tx_info.get('confirmed-round'))
+
+
+def verify_get_back_nft_transaction(tx_id, token_id, username, address):
+    try:
+        tx_info = wait_for_confirmation(tx_id)
+        tx_price = tx_info.get('txn').get('txn').get('amt')
+        tx_note = base64.b64decode(tx_info.get('txn').get('txn').get('note')).decode('ascii')
+        tx_sender = tx_info.get('txn').get('txn').get('snd')
+        tx_receiver = tx_info.get('txn').get('txn').get('rcv')
+        return ((PRICE_GET_BACK == tx_price or tx_price == 1000)
+                and f"{username}_{token_id}" == tx_note
+                and tx_sender == address
+                and tx_receiver == ADDRESS_ALGO_OURSELF
+                and bool(tx_info.get('confirmed-round')))
+    except AlgodHTTPError:
+        return False
 
 
 def wait_for_confirmation(tx_id):
