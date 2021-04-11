@@ -526,6 +526,9 @@ def nft_back() -> str:
             except ValueError:
                 e_full = "Enter an integer for token ID."
                 return json.dumps({"status": 404, "e": WRONG_ARGUMENT, "e_full": e_full})
+            if get_address_from_username(username) != request.form['address']:
+                e_full = "You don't use the same address on your Account. Please update your address in your Account."
+                return json.dumps({"status": 404, "e": WRONG_ARGUMENT, "e_full": e_full})
             token_id = int(request.form['token_id'])
             if token_id not in list_account_assets(ADDRESS_ALGO_OURSELF):
                 e_full = f"Token {token_id} was already sent."
@@ -556,9 +559,6 @@ def nft_back() -> str:
                 int(request.form['token_id'])
             except ValueError:
                 e_full = "Enter an integer for Token ID."
-                return json.dumps({"status": 404, "e": WRONG_ARGUMENT, "e_full": e_full})
-            if get_address_from_username(username) != request.form['address']:
-                e_full = "You don't use the same address on your Account. Please update your address in your Account."
                 return json.dumps({"status": 404, "e": WRONG_ARGUMENT, "e_full": e_full})
             if 'txID' not in request.form:
                 e_full = "Transaction ID is required."
