@@ -536,7 +536,7 @@ def nft_back() -> str:
             if not bool_tx:
                 e_full = "Not enough ALGO on your address, please fund your wallet."
                 return json.dumps({"status": 404, "e": TRANSACTION_ERROR, "e_full": e_full})
-            if token_id <= 15155517:
+            if token_id <= 191275886:
                 amount = 1000
             else:
                 amount = PRICE_GET_BACK
