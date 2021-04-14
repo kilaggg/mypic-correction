@@ -5,6 +5,7 @@ const CONTRACT_KIND = {
     SELL: "sell",
     CANCEL: "cancel",
     GET_BACK: "get_back",
+    DIRECT_SELL: "direct_sell",
 }
 
 class AlgoSignerAPI {
@@ -177,6 +178,9 @@ class Contract {
             case CONTRACT_KIND.SELL:
                 this._sell(url, token_id, price);
                 break;
+            case CONTRACT_KIND.DIRECT_SELL:
+                this._direct_sell(url, token_id, price);
+                break;
             case CONTRACT_KIND.CANCEL:
                 this._cancel(url, token_id);
                 break;
@@ -298,6 +302,19 @@ class Contract {
                 });
             });
         });
+    }
+
+    _direct_sell(url, token_id, price) {
+        this._callServer(url, 
+            "token_id=" + token_id + "&type=sell" + "&price=" + price, 
+            () => {
+                try {
+                    document.getElementById("picture-" + token_id).remove();
+                } catch (error) {
+                    
+                }
+            }
+        );
     }
 
     _cancel(url, token_id) {

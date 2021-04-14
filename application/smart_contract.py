@@ -45,6 +45,7 @@ def fund_smart_contract(smartcontract_address):
     seller_private_key = get_private_key_from_mnemonic(WORD_MNEMONIC)
     params = algod_client.suggested_params()
     params.fee = 1000
+    params.flat_fee = True
     txn = PaymentTxn(ADDRESS_ALGO_OURSELF, params, smartcontract_address, 120000)
     stxn = txn.sign(seller_private_key)
     tx_id = algod_client.send_transaction(stxn)

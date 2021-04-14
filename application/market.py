@@ -28,9 +28,7 @@ import numpy as np
 import requests
 
 
-BLURRY_IMAGES_CONTAINER = "imagesblurry"
-IMAGES_CONTAINER = "images"
-NUMBER_PRINT_IMAGE = 9
+NUMBER_PRINT_IMAGE = 6
 
 
 def build_image_favorites(star: str) -> dict:
@@ -190,13 +188,21 @@ def create_resale(username: str, token_id: int, price: int, tx_id: str) -> bool:
     return False
 
 
+def create_resale_from_back(username: str, token_id: int, price: int, address: str) -> None:
+    query = f"INSERT INTO {SCHEMA}.{RESELL_TABLE_NAME} (username, address, token_id, price) " \
+            f"VALUES ('{username}', '{address}', {token_id}, {price})"
+    SqlManager().execute_query(query, True)
+    query = f"UPDATE NewSell set done=1 WHERE token_id={token_id}"
+    SqlManager().execute_query(query, True)
+
+
 def download_blob_data(container: str, filename: str):
     blob_client = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, container, filename.lower())
     return base64.b64encode(blob_client.download_blob().readall()).decode('ascii')
 
 
-def execute_bid(token_id, price, address):
-    query = f"UPDATE {SCHEMA}.{NEW_SELL_TABLE_NAME} SET current_price={price}, address='{address}', " \
+def execute_bid(token_id, price, address, username):
+    query = f"UPDATE {SCHEMA}.{NEW_SELL_TABLE_NAME} SET current_price={price}, address='{address}', username='{username}', " \
             f"end_date=(SELECT CASE WHEN end_date > DATEADD(minute, 10, GETUTCDATE()) " \
             f"THEN end_date ELSE DATEADD(minute, 10, GETUTCDATE()) " \
             f"END AS end_date FROM NewSell WHERE token_id={token_id}) " \
@@ -256,7 +262,7 @@ def get_new_images_home() -> list:
     df = SqlManager().query_df(query)
     df = df.sample(frac=1)
     df.reset_index(inplace=True)
-    df = df.loc[0:8]
+    df = df.loc[0:5]
     num_cores = multiprocessing.cpu_count()
     new_images = Parallel(n_jobs=num_cores)(delayed(build_new_image_home)(row) for _, row in df.iterrows())
     return new_images

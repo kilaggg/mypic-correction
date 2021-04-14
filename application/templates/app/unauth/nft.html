@@ -1,0 +1,35 @@
+{% extends '/app/unauth/unauth_app.html' %}
+{% set sideFooter = False %}
+{% set tabTitle = nft.token_id %}
+{% block content %} 
+<div id="nft-detail">
+    <img src="{{ nft.uri }} ">
+    <div class="nft-infos">
+        <div class="nft-user">
+            <div class="nft-pp" style="background-image: url({{ user.profile_picture }})"></div>
+            <div class="nft-fullname">{{ user.fullname }}</div>
+            <div class="nft-username">@{{ user.username }}</div>
+        </div>
+        <div class="nft-details">
+            <div class="nft-title">{{nft.title}}</div>
+            <div class="nft-token-id">{{nft.token_id}}</div>
+            <div class="nft-category">Category: {{nft.category}}</div>
+            <div class="nft-description">{{nft.description}}</div>
+        </div>
+        <div class="nft-bid-history">
+            <div class="nft-bid-history-title">
+                Bids:
+            </div>
+            <div class="nft-bid-history-body">
+                {% if bids|length %}
+                {% for bid in bids %}
+                    <div class="nft-bid-history-item">{{bid.username}} - <b>{{bid.price}}</b><div class="algo"></div></div>
+                {% endfor %}
+                {% else %}
+                    No bid yet
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

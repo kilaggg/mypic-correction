@@ -165,6 +165,7 @@
             http.onreadystatechange = function () {
                 if (http.readyState == 4 && http.status == 200) {
                     $('#algo-help-message').html('AlgoSigner is connected with: ' + d[0]['address']);
+                    addTooltip("Address updated!", "");
                     try {
                         document.getElementById("algo-status-bar").remove();
                     } catch (error) {

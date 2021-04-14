@@ -80,7 +80,7 @@ def manage_auction(form, username):
                 old_price = int(get_current_price_from_token_id(token_id))
                 old_micro_price = old_price * CONVERT_TO_MICRO
                 old_address = get_previous_bidder(token_id)
-                execute_bid(token_id, price, address)
+                execute_bid(token_id, price, address, username)
                 dict_bid.pop(token_id, None)
                 # TODO : re-implement socket
                 # socketio.emit("new", data=[str(int(price * 1.1) + 1), token_id])

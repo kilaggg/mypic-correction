@@ -112,6 +112,29 @@ def get_fullname_from_username(username: str) -> Optional[str]:
     return None
 
 
+def get_historical_bid(token_id: int):
+    query = f"SELECT current_price, address, sys_start_time, end_date, username FROM {SCHEMA}.{NEW_SELL_TABLE_NAME} " \
+          f"FOR SYSTEM_TIME ALL WHERE token_id={token_id} and done=0 and address is not null ORDER BY sys_start_time DESC"
+    return SqlManager().query_df(query)
+
+
+def get_infos_from_username(username: str):
+    query = f"SELECT fullname, address, is_public, nsfw, profile_picture_extension, total_followers, notification " \
+            f"FROM {SCHEMA}.{ACCOUNT_TABLE_NAME} account WHERE username='{username}'"
+    return SqlManager().query_df(query)
+
+
+def get_infos_from_email(email: str):
+    query = f"SELECT fullname, address, is_public, nsfw, profile_picture_extension, total_followers, notification " \
+            f"FROM {SCHEMA}.{ACCOUNT_TABLE_NAME} account WHERE email='{email}'"
+    return SqlManager().query_df(query)
+
+
+def get_info_token(token_id: int):
+    query = f"SELECT * FROM Token WHERE token_id={token_id}"
+    return SqlManager().query_df(query)
+
+
 def get_is_public_from_username(username: str) -> Optional[bool]:
     if username_in_db(username):
         query = f"SELECT is_public FROM {SCHEMA}.{ACCOUNT_TABLE_NAME} WHERE username='{username}'"
@@ -130,6 +153,13 @@ def get_previous_bidder(token_id: int):
     if token_id_in_new_sell(token_id):
         query = f"SELECT address FROM {SCHEMA}.{NEW_SELL_TABLE_NAME} WHERE token_id='{token_id}'"
         return SqlManager().query_df(query).loc[0, 'address']
+    return None
+
+
+def get_price_resale(token_id: int):
+    if token_id_in_resale(token_id):
+        query = f"SELECT price FROM {SCHEMA}.{RESELL_TABLE_NAME} WHERE token_id={token_id}"
+        return SqlManager().query_df(query).loc[0, 'price']
     return None
 
 
@@ -178,6 +208,11 @@ def insert_jti_in_blacklist(jti: str) -> None:
     SqlManager().execute_query(query, True)
 
 
+def is_resale(token_id: int) -> bool:
+    query = f"SELECT count(*) AS total FROM {SCHEMA}.{RESELL_TABLE_NAME} WHERE token_id={token_id}"
+    return SqlManager().query_df(query).loc[0, 'total'] == 1
+
+
 def jti_in_blacklist(jti: str) -> bool:
     query = f"SELECT COUNT(*) AS total FROM {SCHEMA}.{ACCESS_TOKEN_BLACKLIST_TABLE} WHERE jti='{jti}'"
     return SqlManager().query_df(query).loc[0, 'total'] == 1
@@ -208,6 +243,12 @@ def save_to_db_temp(reason: str, email: str, username: str = None, password: str
             "object": f"MyPic Security - {reason}"}
     headers = {"Content-Type": "application/json"}
     requests.post(LOGIC_APP_MAIL_URL, headers=headers, json=data)
+
+
+def token_in_sell_by_username(token_id: int, username: str) -> bool:
+    query = f"SELECT count(*) as total FROM {SCHEMA}.{RESELL_TABLE_NAME} " \
+            f"WHERE token_id={token_id} and username='{username}'"
+    return SqlManager().query_df(query).loc[0, 'total'] == 1
 
 
 def token_is_exist(token_id: int) -> bool:

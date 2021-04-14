@@ -152,10 +152,17 @@ class GalleryImage {
         }
 
         // Modal
-        let image_button = document.createElement("button");
+        /*let image_button = document.createElement("button");
         image_button.setAttribute("type", "button");
         image_button.setAttribute("data-toggle", "modal");
         image_button.setAttribute("data-target", "#modal_" + image.token_id);
+        image_button.classList.add("img-button");
+        image_button.classList.add("picture-photo");
+        picture_div.appendChild(image_button);*/
+
+        let image_button = document.createElement("a");
+        image_button.setAttribute("href", "/nft/" + image.token_id);
+        image_button.setAttribute("target", "blank");
         image_button.classList.add("img-button");
         image_button.classList.add("picture-photo");
         picture_div.appendChild(image_button);
@@ -164,10 +171,9 @@ class GalleryImage {
         img.src = window.URL.createObjectURL(b64toBlob(image.uri, image.extension));
         image_button.appendChild(img);
 
-        new GalleryModal(page, image);
+        //new GalleryModal(page, image);
     }
     _buy(image, form, isPreview = false) {
-        console.log("buy")
         let price = document.createElement("div");
         price.classList.add("picture-price")
         price.setAttribute("name", "price");
@@ -295,14 +301,38 @@ class GalleryImage {
     }
 
     _get_back(image, form) {
+        form.classList.add("large-form");
+
+        let sell_button = document.createElement("div");
+        form.appendChild(sell_button);
+
+        let price = document.createElement("input");
+        price.classList.add("picture-price")
+        price.setAttribute("type", "number");
+        price.setAttribute("name", "price");
+        price.setAttribute("min", "0");
+        sell_button.appendChild(price);
+
+        let algo = document.createElement("div");
+        algo.classList.add("algo");
+        sell_button.appendChild(algo);
+
         let submit = document.createElement("button");
-        submit.setAttribute("name", "get_back");
-        submit.classList.add("get-back-button");
+        submit.setAttribute("name", "sell");
+        submit.innerText = "Sell";
         submit.addEventListener("click", () => {
+            new Contract(CONTRACT_KIND.DIRECT_SELL, this.url, image.token_id, price.value);
+        })
+        sell_button.appendChild(submit);
+
+        let submit2 = document.createElement("button");
+        submit2.setAttribute("name", "get_back");
+        submit2.classList.add("get-back-button");
+        submit2.addEventListener("click", () => {
             new Contract(CONTRACT_KIND.GET_BACK, this.url, image.token_id);
         });
-        submit.innerText = "Get";
-        form.appendChild(submit);
+        submit2.innerText = "Get";
+        form.appendChild(submit2);
     }
 }
 

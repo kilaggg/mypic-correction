@@ -7,6 +7,7 @@ from application.market import (
     cancel_resale,
     create_new_image,
     create_resale,
+    create_resale_from_back,
     download_blob_data,
     get_image_from_address,
     get_new_images,
@@ -21,17 +22,26 @@ from application.user import (
     unfollow,
     get_address_from_email,
     get_address_from_username,
+    get_current_price_from_token_id,
+    get_date_from_token_id,
     get_followers_from_username,
     get_fullname_from_email,
     get_fullname_from_username,
-    get_nsfw_from_email,
+    get_historical_bid,
+    get_infos_from_email,
+    get_infos_from_username,
+    get_info_token,
     get_is_public_from_username,
+    get_nsfw_from_email,
     get_password_from_email,
+    get_price_resale,
     get_profile_picture_extension_from_email,
     get_profile_picture_extension_from_username,
     get_stars_from_follower,
     get_username_of_resale,
     hash_password,
+    is_resale,
+    token_in_sell_by_username,
     update_address,
     update_fullname,
     update_nsfw,
@@ -66,13 +76,14 @@ CATEGORIES = [{"value": "default", "name": "Default"}, {"value": "animal", "name
 def account() -> str:
     email = get_jwt_identity()['email']
     username = get_jwt_identity()['username']
-    fullname = get_fullname_from_email(email)
-    address = get_address_from_username(username)
-    pp_extension = get_profile_picture_extension_from_email(email)
+    user_infos = get_infos_from_username(username)
+    fullname = user_infos.loc[0, 'fullname']
+    address = user_infos.loc[0, 'address']
+    pp_extension = user_infos.loc[0, 'profile_picture_extension']
+    followers = user_infos.loc[0, 'total_followers']
+    nsfw = user_infos.loc[0, 'nsfw']
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
-    followers = get_followers_from_username(username)
-    nsfw = get_nsfw_from_email(email)
     pp = f"data:{pp_extension};base64,{profile_picture}"
     user = {'username': username,
             'fullname': fullname,
@@ -120,10 +131,8 @@ def account() -> str:
                 json.dumps({"status": 404, "e": MISSING_ARGUMENT, "e_full": e_full})
             file = request.files['file']
             extension = DICTIONARY_FORMAT[secure_filename(file.filename).split('.')[-1].lower()]
+            session['extension'] = extension
             update_profile_picture(username, file, extension)
-            pp_path = f"{username.lower()}.{extension}"
-            profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
-            session['pp'] = f"data:{extension};base64,{profile_picture}"
             message_full = "Profile Picture was updated."
             return json.dumps({"status": 200, "message": UPDATE_DONE, "message_full": message_full})
     return render_template('app/account.html', user=user, pp=pp)
@@ -219,7 +228,7 @@ def create() -> str:
                                     category)
         message_full = "NFT Successfully created"
         return json.dumps({'status': 200, 'token_id': token_id, 'message': CREATION_DONE, "message_full": message_full})
-    pp_extension = get_profile_picture_extension_from_email(email)
+    pp_extension = session['extension']
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
     pp = f"data:{pp_extension};base64,{profile_picture}"
@@ -266,7 +275,7 @@ def feed() -> str:
     session[f'{page}_number_new'] = 0
     session[f'{page}_number_resale'] = 0
 
-    pp_extension = get_profile_picture_extension_from_email(email)
+    pp_extension = session['extension']
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
     pp = f"data:{pp_extension};base64,{profile_picture}"
@@ -361,7 +370,7 @@ def gallery() -> str:
     session['number_my_gallery'] = 0
     session['number_my_new_image'] = 0
     session['number_my_resale'] = 0
-    pp_extension = get_profile_picture_extension_from_email(email)
+    pp_extension = session['extension']
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
     pp = f"data:{pp_extension};base64,{profile_picture}"
@@ -422,11 +431,15 @@ def gallery_navigation(username: str) -> str:
     session['number_other_gallery'] = 0
     session['number_other_new_image'] = 0
     session['number_other_resale'] = 0
-    pp_extension = get_profile_picture_extension_from_username(username)
+    user_infos = get_infos_from_username(username)
+    if len(user_infos) == 0:
+        # TODO : 404 user
+        return redirect(url_for('main.gallery'))
+    fullname = user_infos.loc[0, 'fullname']
+    pp_extension = user_infos.loc[0, 'profile_picture_extension']
+    followers = user_infos.loc[0, 'total_followers']
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
-    followers = get_followers_from_username(username)
-    fullname = get_fullname_from_username(username)
     is_follow_int = int(is_follow(get_jwt_identity()['username'], username))
     user = {'username': username,
             'profile_picture': f"data:{pp_extension};base64,{profile_picture}",
@@ -434,9 +447,8 @@ def gallery_navigation(username: str) -> str:
             'fullname': fullname,
             'is_follow': is_follow_int}
 
-    email = get_jwt_identity()['email']
     username = get_jwt_identity()['username']
-    pp_extension = get_profile_picture_extension_from_email(email)
+    pp_extension = session['extension']
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
     pp = f"data:{pp_extension};base64,{profile_picture}"
@@ -491,28 +503,142 @@ def gallery_visit(username: str) -> str:
 @bp.route('/list_favorites', methods=('GET', 'POST'))
 @jwt_required
 def list_favorites():
-    email = get_jwt_identity()['email']
     username = get_jwt_identity()['username']
     stars = get_stars_from_follower(username)
     num_cores = multiprocessing.cpu_count()
     users = Parallel(n_jobs=num_cores)(delayed(build_image_favorites)(star) for star in stars)
-    pp_extension = get_profile_picture_extension_from_email(email)
+    pp_extension = session['extension']
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
     pp = f"data:{pp_extension};base64,{profile_picture}"
     return render_template("app/list_favorites.html", users=users, pp=pp)
 
 
+@bp.route('/nft/<token_id>', methods=('GET', 'POST'))
+@jwt_required
+def nft(token_id: int) -> str:
+    print(request.form)
+    if request.method == 'POST':
+        if 'type' in request.form:
+            if (request.form['type'] == 'new'
+                    or request.form['type'] == 'validate_new'
+                    or request.form['type'] == 'error_new'):
+                return manage_auction(request.form, get_jwt_identity()['username'])
+
+            if request.form['type'] == 'resale' or request.form['type'] == 'validate_resale':
+                return manage_buy(request.form, get_jwt_identity()['username'])
+
+            if request.form['type'] == 'check_resale':
+                return check_resale(request.form)
+
+            if request.form['type'] == 'cancel':
+                if 'token_id' not in request.form:
+                    e_full = "Token ID is required."
+                    return json.dumps({"status": 404, "e": MISSING_ARGUMENT, "e_full": e_full})
+                try:
+                    int(request.form['token_id'])
+                except ValueError:
+                    e_full = "Enter an integer for Token ID."
+                    return json.dumps({"status": 404, "e": WRONG_ARGUMENT, "e_full": e_full})
+
+                token_id = int(request.form['token_id'])
+                if get_username_of_resale(token_id) != get_jwt_identity()['username']:
+                    e_full = "You are not the seller of this token, you cannot cancel it."
+                    return json.dumps({"status": 404, "e": SYSTEM_ERROR, "e_full": e_full})
+                cancel = cancel_resale(token_id)
+                if not cancel:
+                    e_full = "Something went wrong, please retry. If the issue persists, please contact us."
+                    return json.dumps({"status": 404, "e": SYSTEM_ERROR, "e_full": e_full})
+                message_full = "Sell was cancelled."
+                return json.dumps({"status": 200, "message": TRANSACTION_DONE, "message_full": message_full})
+
+        e_full = "Endpoint not found."
+        return json.dumps({"status": 404, "e": NO_API, "e_full": e_full})
+    bid = get_historical_bid(token_id)
+    token = get_info_token(token_id)
+    email = get_jwt_identity()['email']
+    user_infos = get_infos_from_email(email)
+    address = user_infos.loc[0, 'address']
+
+    # create user variable
+    username = token.loc[0, 'username']
+    nft_user_infos = get_infos_from_username(username)
+    pp_extension = nft_user_infos.loc[0, 'profile_picture_extension']
+    pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
+    profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
+    pp = f"data:{pp_extension};base64,{profile_picture}"
+    user = {'username': username,
+            'fullname': nft_user_infos.loc[0, 'fullname'],
+            'profile_picture': pp}
+
+    # create nft variable
+    nsfw = user_infos.loc[0, 'nsfw']
+    my = (token_id in list_account_assets(address)
+          or username == get_jwt_identity()['username']
+          or token_in_sell_by_username(token_id, get_jwt_identity()['username']))
+    container = IMAGES_CONTAINER if (token.loc[0, 'is_public'] or my) and (not token.loc[0, 'is_nsfw'] or nsfw) else BLURRY_IMAGES_CONTAINER
+    extension = token.loc[0, 'extension']
+    image_path = f"{token.loc[0, 'username'].lower()}/{token.loc[0, 'swarm_hash']}.{extension}"
+    end_date = get_date_from_token_id(token_id)
+    type = "bid" if end_date > datetime.utcnow() else "buy" if is_resale(token_id) else "none"
+    price = None if type == "none" else int(get_current_price_from_token_id(token_id) * 1.1) + 1 if type == "bid" else get_price_resale(token_id)
+    nft = {'title': token.loc[0, 'title'],
+           'number': token.loc[0, 'number'],
+           'description': token.loc[0, 'description'],
+           'category': token.loc[0, 'category'],
+           'royalties': token.loc[0, 'royalties'],
+           'is_public': token.loc[0, 'is_public'],
+           'is_nsfw': token.loc[0, 'is_nsfw'],
+           'uri': f"data:image/{extension};base64,{download_blob_data(container, image_path)}",
+           'token_id': token_id,
+           'type': type,
+           'price': price,
+           'end_date': end_date,
+           'my': my}
+    bid_history = [{'price': row['current_price'], 'username': row['username'], 'date': row['sys_start_time']}
+                   for _, row in bid.iterrows()]
+    pp_extension = user_infos.loc[0, 'profile_picture_extension']
+    pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
+    profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
+    pp = f"data:{pp_extension};base64,{profile_picture}"
+    return render_template(f'app/nft.html', user=user, nft=nft, bids=bid_history, pp=pp)
+
+
 @bp.route('/nft_back', methods=('GET', 'POST'))
 @jwt_required
 def nft_back() -> str:
     username = get_jwt_identity()['username']
+    print(request.form)
     if request.method == 'POST':
         if "more" in request.form:
             data_nft_back = get_nft_back(session.get('nft_back'), username)
             session['nft_back'] = session.get('nft_back') + 1
             message = "Successfully claimed NFT."
             return json.dumps({"status": 200, "pictures": data_nft_back, "message": message})
+
+        if "type" in request.form and request.form['type'] == 'sell':
+            if 'token_id' not in request.form:
+                e_full = "Token ID is required."
+                return json.dumps({"status": 404, "e": MISSING_ARGUMENT, "e_full": e_full})
+            if 'price' not in request.form:
+                e_full = "Price is required."
+                return json.dumps({"status": 404, "e": MISSING_ARGUMENT, "e_full": e_full})
+            try:
+                int(request.form['token_id'])
+            except ValueError:
+                e_full = "Enter an integer for token ID."
+                return json.dumps({"status": 404, "e": WRONG_ARGUMENT, "e_full": e_full})
+            try:
+                int(request.form['price'])
+            except ValueError:
+                e_full = "Enter an integer for Price."
+                return json.dumps({"status": 404, "e": WRONG_ARGUMENT, "e_full": e_full})
+            token_id = int(request.form['token_id'])
+            price = int(request.form['price'])
+            address = get_address_from_username(username)
+            create_resale_from_back(username, token_id, price, address)
+            message_full = f"Successfully put Token {token_id} on sell"
+            return json.dumps({"status": 200, "message": TRANSACTION_STARTED, "message_full": message_full})
 
         if "type" in request.form and request.form['type'] == 'check':
             if 'token_id' not in request.form:
@@ -575,12 +701,48 @@ def nft_back() -> str:
         e_full = "Endpoint not found."
         return json.dumps({"status": 404, "e": NO_API, "e_full": e_full})
     session['nft_back'] = 0
-    email = get_jwt_identity()['email']
-    pp_extension = get_profile_picture_extension_from_email(email)
+    pp_extension = session['extension']
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
     pp = f"data:{pp_extension};base64,{profile_picture}"
     return render_template(f'app/nft_back.html', pp=pp)
+
+
+@bp.route('/nft_visit/<token_id>', methods=('GET', 'POST'))
+def nft_visit(token_id: int) -> str:
+    bid = get_historical_bid(token_id)
+    token = get_info_token(token_id)
+
+    # create user variable
+    username = token.loc[0, 'username']
+    pp_extension = get_profile_picture_extension_from_username(username)
+    pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
+    profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
+    pp = f"data:{pp_extension};base64,{profile_picture}"
+    user = {'username': username,
+            'fullname': get_fullname_from_username(username),
+            'profile_picture': pp}
+
+    # create nft variable
+    container = IMAGES_CONTAINER if token.loc[0, 'is_public'] and not token.loc[0, 'is_nsfw'] else BLURRY_IMAGES_CONTAINER
+    extension = token.loc[0, 'extension']
+    image_path = f"{token.loc[0, 'username'].lower()}/{token.loc[0, 'swarm_hash']}.{extension}"
+    type = "bid" if get_date_from_token_id(token_id) > datetime.utcnow() else "buy" if is_resale(token_id) else "none"
+    price = None if type == "none" else int(get_current_price_from_token_id(token_id) * 1.1) + 1 if type == "bid" else get_price_resale(token_id)
+    nft = {'title': token.loc[0, 'title'],
+           'number': token.loc[0, 'number'],
+           'description': token.loc[0, 'description'],
+           'category': token.loc[0, 'category'],
+           'royalties': token.loc[0, 'royalties'],
+           'is_public': token.loc[0, 'is_public'],
+           'is_nsfw': token.loc[0, 'is_nsfw'],
+           'uri': f"data:image/{extension};base64,{download_blob_data(container, image_path)}",
+           'token_id': token_id,
+           'type': type,
+           'price': price}
+    bid_history = [{'price': row['current_price'], 'username': "test", 'date': row['sys_start_time']}
+                   for _, row in bid.iterrows()]
+    return render_template(f'app/unauth/nft.html', user=user, nft=nft, bids=bid_history)
 
 
 @bp.route('/wallet_installed', methods=('GET', 'POST'))

@@ -235,14 +235,14 @@ input::placeholder {
 
 #front-image div {
     border-radius: 22px;
-    background-image: url("../img/front1.jpeg");
+    background-image: url("../img/front2.jpeg");
     background-size: cover;
     width: 224px;
     height: 489px;
     background-repeat: no-repeat;
     right: -186px;
     bottom: 5px;
-    animation: animated-login-phone 10s infinite alternate;
+    /*animation: animated-login-phone 10s infinite alternate;*/
     background-position: center;
 }
 
@@ -591,6 +591,22 @@ Gallery: Picture
     flex-wrap: wrap;
     justify-content: flex-end;
     align-items: center;
+}
+
+.picture-form.large-form {
+    display: grid;
+    grid-template-columns: 50% 50%;
+    grid-area: initial;
+    grid-column: span 2;
+    padding-left: 8px;
+}
+
+.picture-form.large-form div:first-child {
+    justify-self: flex-start;
+}
+
+.get-back-button {
+    justify-self: flex-end;
 }
 
 .picture-photo {
@@ -1117,6 +1133,138 @@ Favorites
     height: 29px;
     justify-self: end;
 }
+
+
+
+/******* NFT *************/
+#nft-detail {
+    padding: 5px 50px;
+    display: grid;
+    grid-template-columns: auto 400px;
+}
+
+#nft-detail > img {
+    max-height: 90vh;
+}
+
+.nft-infos {
+    box-sizing: border-box;
+    background-color: white;
+    border: 1px solid var(--outline-color);
+    padding: 5px;
+}
+
+
+.nft-user {
+    display: grid;
+    grid-template-columns: 80px auto;
+    grid-template-areas: 
+    "img fullname"
+    "img username";
+    text-align: left;
+    padding-left: 8px;
+    margin-bottom: 5px;
+}
+
+.nft-fullname {
+    grid-area: fullname;
+    display: inline;
+    color: var(--base-color);
+    text-align: left;
+    padding-left: 10px;
+    position: relative;
+    align-self: end;
+    font-weight: bolder;
+}
+
+.nft-username {
+    grid-area: username;
+    display: inline;
+    color: var(--base-color);
+    text-align: left;
+    padding-left: 10px;
+    position: relative;
+    font-size: smaller;
+}
+
+
+.nft-pp {
+    grid-area: img;
+    display: inline-block;
+    background-size: cover;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+}
+
+.nft-details {
+    color: var(--dark-base-color);
+    margin-bottom: 5px;
+}
+
+.nft-title {
+    text-align: left;
+    font-weight: bolder;
+    font-size: larger;
+}
+
+.nft-category, .nft-token-id {
+    text-align: left;
+    font-weight: lighter;
+    font-size: smaller;
+    color: var(--base-color);
+}
+
+.nft-description {
+    text-align: justify;
+    overflow-wrap: anywhere;
+    padding: 10px;
+    font-size: smaller;
+}
+
+.nft-bid-history {
+    color: var(--base-color);
+    display: flex;
+    flex-direction: column;
+    overflow-y: scroll;
+    margin-bottom: 50px;
+    max-height: 20vh;
+}
+
+.nft-bid-history-title {
+    text-align: left;
+    font-weight: bolder;
+    font-size: larger;
+    color: var(--dark-base-color);
+}
+
+.nft-bid-history-body {
+    padding-left: 10px;
+}
+
+.nft-form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-items: center;
+}
+
+.nft-form input {
+    width: 50px;
+}
+
+.nft-form button.fat {
+    margin-top: 10px;
+}
+
+.nft-price, .nft-countdown {
+    display: inline-block;
+}
+
+.nft-countdown {
+    margin-right: 7px;
+}
+
 
 
 /*******

@@ -6,6 +6,7 @@ from application.user import (
     email_in_db,
     get_address_from_email,
     get_password_from_email,
+    get_profile_picture_extension_from_email,
     get_username_from_email,
     hash_password,
     insert_jti_in_blacklist,
@@ -68,6 +69,7 @@ def login() -> Union[str, Response]:
                     if safe_str_cmp(password, get_password_from_email(email)):
                         if get_address_from_email(email) is not None:
                             session["installed"] = True
+                        session['extension'] = get_profile_picture_extension_from_email(email)
                         response = make_response(redirect(url_for('main.gallery')))
                         username = get_username_from_email(email)
                         access_token = create_access_token(identity={"email": email, "username": username})
@@ -164,6 +166,7 @@ def registration_validation() -> Union[str, Response]:
                 if get_address_from_email(email) is not None:
                     session["installed"] = True
                 save_to_db(email)
+                session['extension'] = 'default-profile.png'
                 username = get_username_from_email(email)
                 default_client = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, PROFILE_PICTURES_CONTAINER,
                                                                    'default-profile.png')

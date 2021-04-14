@@ -34,6 +34,8 @@ def my_unauthorized_callback(callback):
     flash(callback)
     if 'gallery' in request.url and len(request.url.split('/')) == 5:
         return redirect(request.url.replace('gallery', 'visit'))
+    if '/nft/' in request.url:
+        return redirect(request.url.replace('nft', 'nft_visit'))
     return redirect(url_for('auth.login'))
 
 

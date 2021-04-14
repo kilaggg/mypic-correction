@@ -1,0 +1,81 @@
+{% extends '/app/base_app.html' %}
+{% set sideFooter = False %}
+{% set tabTitle = nft.token_id %}
+{% block content %} 
+<div id="nft-detail">
+    <img src="{{ nft.uri }} ">
+    <div class="nft-infos">
+        <div class="nft-user">
+            <div class="nft-pp" style="background-image: url({{ user.profile_picture }})"></div>
+            <div class="nft-fullname">{{ user.fullname }}</div>
+            <div class="nft-username">@{{ user.username }}</div>
+        </div>
+        <div class="nft-details">
+            <div class="nft-title">{{nft.title}}</div>
+            <div class="nft-token-id">{{nft.token_id}}</div>
+            <div class="nft-category">Category: {{nft.category}}</div>
+            <div class="nft-description">{{nft.description}}</div>
+        </div>
+        <div class="nft-bid-history">
+            <div class="nft-bid-history-title">
+                Bids:
+            </div>
+            <div class="nft-bid-history-body">
+                {% if bids|length %}
+                {% for bid in bids %}
+                    <div class="nft-bid-history-item">{{bid.username}} - <b>{{bid.price}}</b><div class="algo"></div></div>
+                {% endfor %}
+                {% else %}
+                    No bid yet
+                {% endif %}
+            </div>
+        </div>
+        <div class="nft-form">
+            {% if nft.type == "bid"%}
+                <div>
+                    <div class="nft-countdown"></div>
+                    <input class="nft-bid" type="number" name="price" min="{{nft.price}}" value="{{nft.price}}">
+                    <div class="algo"></div>
+                </div>
+                <button name="bid" class="buy-button fat" onclick="bid()">Bid</button>
+            {% elif nft.type == "buy"%}
+                {% if nft.my %}
+                    <button type="submit" name="cancel" class="buy-button fat" onclick="cancel()">Cancel</button>
+                {% else %}
+                    <div>
+                        <div class="nft-price" name="price">{{nft.price}}</div>
+                        <div class="algo"></div>
+                    </div>
+                    <button type="submit" name="buy" class="buy-button fat" onclick="buy()">Buy</button>
+                {% endif %}
+            {%endif%}
+        </div>
+    </div>
+</div>
+
+<script src="{{ url_for('static', filename='/js/Contract.js') }}"></script>
+<script src="{{ url_for('static', filename='/js/Gallery.js') }}"></script>
+<script>
+    let url = "nft/{{nft.token_id}}";
+    let tokenId = parseInt("{{nft.token_id}}");
+    function buy() {
+        let price = parseInt(document.querySelector(".nft-price").innerText);
+        new Contract(CONTRACT_KIND.BUY, url, tokenId, price);
+    }
+
+    function bid() {
+        let price = document.querySelector(".nft-bid").value;
+        console.log(price, document.querySelector(".nft-bid"))
+        new Contract(CONTRACT_KIND.BID, url, tokenId, price);
+    }
+
+    function cancel() {
+        new Contract(CONTRACT_KIND.CANCEL, url, tokenId)
+    }
+
+
+        let countdown = document.querySelector(".nft-countdown");
+        let imageEnd = "{{nft.end_date}}";
+        if (countdown != null) createCountdown(imageEnd.replace(" ", "T"), countdown);
+</script>
+{% endblock %}
