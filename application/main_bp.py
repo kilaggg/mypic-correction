@@ -598,7 +598,7 @@ def nft(token_id: int) -> str:
     bid_history = [{'price': row['current_price'], 'username': row['username'], 'date': row['sys_start_time']}
                    for _, row in bid.iterrows()]
     pp_extension = user_infos.loc[0, 'profile_picture_extension']
-    pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
+    pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{get_jwt_identity()['username'].lower()}.{pp_extension}"
     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
     pp = f"data:{pp_extension};base64,{profile_picture}"
     return render_template(f'app/nft.html', user=user, nft=nft, bids=bid_history, pp=pp)
