@@ -73,9 +73,8 @@
         new Contract(CONTRACT_KIND.CANCEL, url, tokenId)
     }
 
-
-        let countdown = document.querySelector(".nft-countdown");
-        let imageEnd = "{{nft.end_date}}";
-        if (countdown != null) createCountdown(imageEnd.replace(" ", "T"), countdown);
+    let countdown = document.querySelector(".nft-countdown");
+    let imageEnd = "{{nft.end_date}}";
+    if (countdown != null) createCountdown(imageEnd.replace(" ", "T"), countdown);
 </script>
 {% endblock %}

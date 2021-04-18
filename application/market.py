@@ -248,8 +248,6 @@ def get_new_images(page: int, nsfw: bool, username: str = None, follower: str = 
     df.sort_values('end_date', inplace=True)
     if username is not None:
         df = df[df['username'].str.lower() == username.lower()]
-    # if email is not None:
-    #     df = df[df['username'].str.lower() != get_username_from_email(email).lower()]
     df.reset_index(inplace=True)
     df = df.loc[page * NUMBER_PRINT_IMAGE:(page + 1) * NUMBER_PRINT_IMAGE - 1]
     num_cores = multiprocessing.cpu_count()
@@ -319,20 +317,39 @@ def upload_image_swarm(file: FileStorage, username: str, is_public) -> (str, str
     result = requests.post(url, data=file, headers=headers)
     swarm_hash = json.loads(result.content.decode('utf8'))["reference"]
     image = Image.open(file)
+    image_thumbnail = Image.open(file)
     output = io.BytesIO()
+    output_thumbnail = io.BytesIO()
     if image_format == 'gif':
         frames = [np.asarray(im_frame.convert('RGB'))
                   for im_frame in ImageSequence.Iterator(image)]
         images = [Image.fromarray(a_frame) for a_frame in np.stack(frames)]
         images[0].save(output, save_all=True, append_images=images[1:], format='gif', loop=0)
+
+        frames_thumbnail = []
+        for im_frame in ImageSequence.Iterator(image_thumbnail):
+            img_convert = im_frame.convert('RGB')
+            img_convert.thumbnail((645, 570))
+            frames_thumbnail.append(np.asarray(img_convert))
+        # frames_thumbnail = [np.asarray(im_frame.convert('RGB'))
+        #                     for im_frame in ImageSequence.Iterator(image_thumbnail)]
+        images_thumbnail = [Image.fromarray(a_frame) for a_frame in np.stack(frames_thumbnail)]
+        images_thumbnail[0].save(output_thumbnail, save_all=True, append_images=images_thumbnail[1:], format='gif', loop=0)
     else:
         image.save(output, format=image_format)
+        image_thumbnail.thumbnail((645, 570))
+        image_thumbnail.save(output_thumbnail, format=image_format)
     hex_data = output.getvalue()
-    blob_client = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, IMAGES_CONTAINER,
+    blob_client = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, IMAGES_CONTAINER_FULL,
                                                     f"{username.lower()}/{swarm_hash[:64]}.{image_format}")
     blob_client.upload_blob(hex_data, overwrite=True)
+    hex_data_thumbnail = output_thumbnail.getvalue()
+    blob_client_thumbnail = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, IMAGES_CONTAINER,
+                                                             f"{username.lower()}/{swarm_hash[:64]}.{image_format}")
+    blob_client_thumbnail.upload_blob(hex_data_thumbnail, overwrite=True)
 
     blurry_output = io.BytesIO()
+    blurry_output_thumbnail = io.BytesIO()
     if image_format == 'gif':
         im = Image.open(file)
         frames = [np.asarray(im_frame.convert('RGB').filter(ImageFilter.BoxBlur(50)))
@@ -340,11 +357,32 @@ def upload_image_swarm(file: FileStorage, username: str, is_public) -> (str, str
         blurry_images = [Image.fromarray(a_frame) for a_frame in np.stack(frames)]
 
         blurry_images[0].save(blurry_output, save_all=True, append_images=blurry_images[1:], format='gif', loop=0)
+
+        blurry_image_thumbnail = Image.open(file)
+        blurry_frames_thumbnail = []
+        for im_frame in ImageSequence.Iterator(blurry_image_thumbnail):
+            blurry_img_convert_thumbnail = im_frame.convert('RGB')
+            blurry_img_convert_thumbnail.thumbnail((645, 570))
+            blurry_frames_thumbnail.append(np.asarray(blurry_img_convert_thumbnail))
+        # blurry_frames_thumbnail = [np.asarray(im_frame.convert('RGB').filter(ImageFilter.BoxBlur(50)))
+        #                            for im_frame in ImageSequence.Iterator(blurry_image_thumbnail)]
+        blurry_images_thumbnail = [Image.fromarray(a_frame) for a_frame in np.stack(blurry_frames_thumbnail)]
+
+        blurry_images_thumbnail[0].save(blurry_output_thumbnail, save_all=True, append_images=blurry_images_thumbnail[1:], format='gif', loop=0)
     else:
         blurry_image = Image.open(file).filter(ImageFilter.BoxBlur(50))
         blurry_image.save(blurry_output, format=image_format)
+
+        blurry_image_thumbnail = Image.open(file).filter(ImageFilter.BoxBlur(50))
+        blurry_image_thumbnail.thumbnail((645, 570))
+        blurry_image_thumbnail.save(blurry_output_thumbnail, format=image_format)
     blurry_hex_data = blurry_output.getvalue()
-    blurry_blob_client = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, BLURRY_IMAGES_CONTAINER,
+    blurry_blob_client = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, BLURRY_IMAGES_CONTAINER_FULL,
                                                            f"{username.lower()}/{swarm_hash[:64]}.{image_format}")
     blurry_blob_client.upload_blob(blurry_hex_data, overwrite=True)
+
+    blurry_hex_data_thumbnail = blurry_output_thumbnail.getvalue()
+    blurry_blob_client_thumbnail = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, BLURRY_IMAGES_CONTAINER,
+                                                           f"{username.lower()}/{swarm_hash[:64]}.{image_format}")
+    blurry_blob_client_thumbnail.upload_blob(blurry_hex_data_thumbnail, overwrite=True)
     return swarm_hash

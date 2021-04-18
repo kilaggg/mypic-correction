@@ -2,6 +2,7 @@ from application import BLOB_CONNECTION_STRING, LOGIC_APP_MAIL_URL
 from application.constants import *
 from application.sql_manager import SqlManager
 from azure.storage.blob import BlobClient
+from flask import session
 from hashlib import sha256
 from typing import Optional
 from werkzeug.datastructures import FileStorage
@@ -75,6 +76,8 @@ def get_date_from_token_id(token_id: int):
 
 
 def get_nsfw_from_email(email: str) -> Optional[bool]:
+    if 'nsfw' in session:
+        return session['nsfw']
     if email_in_db(email):
         query = f"SELECT nsfw FROM {SCHEMA}.{ACCOUNT_TABLE_NAME} WHERE email='{email}'"
         return bool(SqlManager().query_df(query).loc[0, 'nsfw'])
@@ -164,6 +167,8 @@ def get_price_resale(token_id: int):
 
 
 def get_profile_picture_extension_from_email(email: str) -> Optional[str]:
+    if 'extension' in session:
+        return session['extension']
     if email_in_db(email):
         query = f"SELECT profile_picture_extension FROM {SCHEMA}.{ACCOUNT_TABLE_NAME} WHERE email='{email}'"
         return SqlManager().query_df(query).loc[0, 'profile_picture_extension']

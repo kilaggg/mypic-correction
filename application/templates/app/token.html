@@ -1,0 +1,63 @@
+{% extends '/base.html' %} 
+{% block body %}
+{% if sideFooter is not defined%}
+{% set sideFooter = False %}
+{% endif %}
+
+<script src="{{ url_for('static', filename='/js/tooltip.js') }}"></script>
+<script src="{{ url_for('static', filename='/js/Contract.js') }}"></script>
+<div id="token">
+    <div id="token-title"><a class="logo" href="/">MyPic</a></div>
+    <div id="token-body">
+        <div id="token-presentation">
+            <h1 id="token-title">Pre-Launch MyPic Asset distribution</h1>
+            <div id="token-summary">
+                <h3>Remaining MyPic: {{contract.current}}/{{contract.total}}</h3>
+                <h3>Your MyPic balance: {{contract.amount_wallet}}</h3>
+                <div id="loading-bar">
+                    <div class="front" style="width:{{contract.sell / contract.total * 300}}px"></div>
+                    <div class="back" style="width:300px"></div>
+                </div>
+            </div>
+            <div>
+                <h2>Algo &#8596; MyPic Swap Contract:</h2>
+                <p>ID2I3FRJ5GGEZ323I4UTTY43TKW4UWPRPRTRBGDVQNOW45D62V2P4NIJTE</p>
+                <p>
+                    <a href="https://algoexplorer.io/address/ID2I3FRJ5GGEZ323I4UTTY43TKW4UWPRPRTRBGDVQNOW45D62V2P4NIJTE">
+                        https://algoexplorer.io/address/ID2I3FRJ5GGEZ323I4UTTY43TKW4UWPRPRTRBGDVQNOW45D62V2P4NIJTE
+                    </a>
+                </p>
+            </div>
+            <div>
+                <h2>Swapping Contract, 32 MyPic for 1 Algo</h2>
+                <h3>Look & verify swapping contract:</h3>
+                <p>
+                    b end_program <br>
+                    branch swap:
+                    // Assert Swap ratio ----------> swap 32 MYPIC for 1 ALGO<br>
+                    gtxn 1 AssetAmount<br>
+                    gtxn 0 Amount........<br>
+                    /int 32<br>
+                </p>
+            </div>
+        </div>
+        <div id="token-form">
+            {% with messages = get_flashed_messages() %} {% if messages %} <span class=errors> {{ messages[-1] }} </span> {% endif %} {% endwith %}
+            <label for="price">Price (in <div class="algo"></div>):</label>
+            <input type="number" placeholder="Price" name="price" min="1" value="1" id="token-price" required>
+            
+            <button id="token-button" class="fat">Buy</button>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById("token-button").addEventListener("click", () => {
+        submit_token();
+    });
+    
+    function submit_token() {
+        let price = document.getElementById("token-price").value;
+        new Contract(CONTRACT_KIND.ICO, "/token", "", price);
+    }
+</script>
+{% endblock %}

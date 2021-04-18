@@ -107,6 +107,7 @@ def account() -> str:
             if 'nsfw' in request.form and (request.form['nsfw'] == 'on') != nsfw:
                 new_nsfw = int(request.form['nsfw'] == 'on')
                 update_nsfw(email, new_nsfw)
+                session['nsfw'] = bool(new_nsfw)
                 message_full = "NSFW account was updated."
                 return json.dumps({"status": 200, "message": UPDATE_DONE, "message_full": message_full})
 
@@ -228,7 +229,7 @@ def create() -> str:
                                     category)
         message_full = "NFT Successfully created"
         return json.dumps({'status': 200, 'token_id': token_id, 'message': CREATION_DONE, "message_full": message_full})
-    pp_extension = session['extension']
+    pp_extension = get_profile_picture_extension_from_email(email)
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
     pp = f"data:{pp_extension};base64,{profile_picture}"
@@ -275,7 +276,7 @@ def feed() -> str:
     session[f'{page}_number_new'] = 0
     session[f'{page}_number_resale'] = 0
 
-    pp_extension = session['extension']
+    pp_extension = get_profile_picture_extension_from_email(email)
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
     pp = f"data:{pp_extension};base64,{profile_picture}"
@@ -370,7 +371,7 @@ def gallery() -> str:
     session['number_my_gallery'] = 0
     session['number_my_new_image'] = 0
     session['number_my_resale'] = 0
-    pp_extension = session['extension']
+    pp_extension = get_profile_picture_extension_from_email(email)
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
     pp = f"data:{pp_extension};base64,{profile_picture}"
@@ -382,6 +383,7 @@ def gallery() -> str:
 def gallery_navigation(username: str) -> str:
     if username == get_jwt_identity()['username']:
         return redirect(url_for('main.gallery'))
+    email = get_jwt_identity()['email']
     if request.method == 'POST':
         is_public = get_is_public_from_username(username)
         if "more" in request.form:
@@ -448,7 +450,7 @@ def gallery_navigation(username: str) -> str:
             'is_follow': is_follow_int}
 
     username = get_jwt_identity()['username']
-    pp_extension = session['extension']
+    pp_extension = get_profile_picture_extension_from_email(email)
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
     pp = f"data:{pp_extension};base64,{profile_picture}"
@@ -503,11 +505,12 @@ def gallery_visit(username: str) -> str:
 @bp.route('/list_favorites', methods=('GET', 'POST'))
 @jwt_required
 def list_favorites():
+    email = get_jwt_identity()['email']
     username = get_jwt_identity()['username']
     stars = get_stars_from_follower(username)
     num_cores = multiprocessing.cpu_count()
     users = Parallel(n_jobs=num_cores)(delayed(build_image_favorites)(star) for star in stars)
-    pp_extension = session['extension']
+    pp_extension = get_profile_picture_extension_from_email(email)
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
     pp = f"data:{pp_extension};base64,{profile_picture}"
@@ -576,7 +579,7 @@ def nft(token_id: int) -> str:
     my = (token_id in list_account_assets(address)
           or username == get_jwt_identity()['username']
           or token_in_sell_by_username(token_id, get_jwt_identity()['username']))
-    container = IMAGES_CONTAINER if (token.loc[0, 'is_public'] or my) and (not token.loc[0, 'is_nsfw'] or nsfw) else BLURRY_IMAGES_CONTAINER
+    container = IMAGES_CONTAINER_FULL if (token.loc[0, 'is_public'] or my) and (not token.loc[0, 'is_nsfw'] or nsfw) else BLURRY_IMAGES_CONTAINER_FULL
     extension = token.loc[0, 'extension']
     image_path = f"{token.loc[0, 'username'].lower()}/{token.loc[0, 'swarm_hash']}.{extension}"
     end_date = get_date_from_token_id(token_id)
@@ -608,6 +611,7 @@ def nft(token_id: int) -> str:
 @jwt_required
 def nft_back() -> str:
     username = get_jwt_identity()['username']
+    email = get_jwt_identity()['email']
     print(request.form)
     if request.method == 'POST':
         if "more" in request.form:
@@ -701,7 +705,7 @@ def nft_back() -> str:
         e_full = "Endpoint not found."
         return json.dumps({"status": 404, "e": NO_API, "e_full": e_full})
     session['nft_back'] = 0
-    pp_extension = session['extension']
+    pp_extension = get_profile_picture_extension_from_email(email)
     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
     pp = f"data:{pp_extension};base64,{profile_picture}"
@@ -724,7 +728,7 @@ def nft_visit(token_id: int) -> str:
             'profile_picture': pp}
 
     # create nft variable
-    container = IMAGES_CONTAINER if token.loc[0, 'is_public'] and not token.loc[0, 'is_nsfw'] else BLURRY_IMAGES_CONTAINER
+    container = IMAGES_CONTAINER_FULL if token.loc[0, 'is_public'] and not token.loc[0, 'is_nsfw'] else BLURRY_IMAGES_CONTAINER_FULL
     extension = token.loc[0, 'extension']
     image_path = f"{token.loc[0, 'username'].lower()}/{token.loc[0, 'swarm_hash']}.{extension}"
     type = "bid" if get_date_from_token_id(token_id) > datetime.utcnow() else "buy" if is_resale(token_id) else "none"
@@ -757,3 +761,57 @@ def wallet_installed():
     session["installed"] = True
     message = "Address was updated."
     return json.dumps({"status": 200, "message": message})
+
+
+
+
+## TOKEN MY PIC
+
+# TOKEN_MY_PIC = 1
+# ADDRESS_ALGO_CONTRACT_MYPIC = ""
+# @bp.route('/token', methods=('GET', 'POST'))
+# @jwt_required
+# def token():
+#     email = get_jwt_identity()['email']
+#     username = get_jwt_identity()['username']
+#     if request.method == 'POST':
+#         if "type" in request.form and request.form['type'] == 'check':
+#             if 'price' not in request.form:
+#                 e_full = "Price is required."
+#                 return json.dumps({"status": 404, "e": MISSING_ARGUMENT, "e_full": e_full})
+#             if 'address' not in request.form:
+#                 e_full = "Address is required."
+#                 return json.dumps({"status": 404, "e": MISSING_ARGUMENT, "e_full": e_full})
+#             try:
+#                 int(request.form['price'])
+#             except ValueError:
+#                 e_full = "Enter an integer for Price."
+#                 return json.dumps({"status": 404, "e": WRONG_ARGUMENT, "e_full": e_full})
+#             price = int(request.form['price'])
+#             address = request.form['address']
+#             bool_optin = TOKEN_MY_PIC in list_account_assets_all(address)
+#             bool_tx = check_algo_for_tx(address, price, bool_optin)
+#             if not bool_tx:
+#                 e_full = "Not enough ALGO on your address, please fund your wallet."
+#                 return json.dumps({"status": 404, "e": TRANSACTION_ERROR, "e_full": e_full})
+#             message_full = "Wait a few seconds to get your NFT"
+#             return json.dumps({"status": 200, "check_token": bool_optin, "address": ADDRESS_ALGO_CONTRACT_MYPIC,
+#                                "token_id": TOKEN_MY_PIC, "message": TRANSACTION_STARTED, "message_full": message_full})
+#
+#         if "type" in request.form and request.form['type'] == 'validate':
+#             # TODO
+#             message_full = "TODO"
+#             return json.dumps({"status": 200, "message": TRANSACTION_STARTED, "message_full": message_full})
+#
+#     pp_extension = get_profile_picture_extension_from_email(email)
+#     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
+#     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
+#     pp = f"data:{pp_extension};base64,{profile_picture}"
+#
+#     contract = {
+#         "total": 1000000,
+#         "current": 300000,
+#         "sell": 700000,
+#         "amount_wallet": 3000,
+#     }
+#     return render_template(f'app/token.html', pp=pp, contract=contract)

@@ -6,6 +6,7 @@ const CONTRACT_KIND = {
     CANCEL: "cancel",
     GET_BACK: "get_back",
     DIRECT_SELL: "direct_sell",
+    ICO: "ico",
 }
 
 class AlgoSignerAPI {
@@ -188,6 +189,8 @@ class Contract {
                 this._getBack(url, token_id);
                 break;
         
+            case CONTRACT_KIND.ICO:
+                this._ico(url, price);
             default:
                 break;
         }
@@ -230,7 +233,6 @@ class Contract {
     }
 
     _buy(url, token_id, amount) {
-        addTooltip("Buy in progress, wait a minute", "");
         AlgoSignerAPI.account((from) => {
             this._callServer(url, "token_id=" + token_id + "&address=" + from + "&type=check_resale&price=" + amount, (parsed) => {
                 let note = parsed.username + "_" + token_id;
@@ -396,5 +398,40 @@ class Contract {
 
     cancelTransaction(url, token_id, from, amount) {
         _callServer(url, "token_id=" + token_id + "&type=error_new" + "&price=" + amount + "&address=" + from);
+    }
+
+
+    ico(url, amount) {
+        AlgoSignerAPI.account((from) => {
+            this._callServer(url, "address=" + from + "&type=check&price=" + amount, (parsed) => {
+                let token_id = parsed.token_id;
+                let address = parsed.address;
+                let note = parsed.username + "_ico";
+                AlgoSignerAPI.get_param((tx) => {
+                    if (parsed.check_token) {
+                        this._ico_in_progress(url, token_id, from, address, amount, note, tx);
+                    } else {
+                        AlgoSignerAPI.signIn(from, token_id, "", tx, (signedTx) => {
+                            AlgoSignerAPI.send_algo(signedTx, (s) => {
+                                this._ico_in_progress(url, token_id, from, address, amount, note, tx);
+                            });
+                        });
+                    }
+                });
+            });
+        });
+    }
+
+    _ico_in_progress(url, token_id, from, to, amount, note, tx) {
+        AlgoSignerAPI.signPay(from, to, amount, note, tx, (signedTx) => {
+            AlgoSignerAPI.send_algo(signedTx, (s) => {
+                this._callServer(url, 
+                    "token_id=" + token_id + "&type=validate" + "&price=" + amount + "&address=" + from + "&txID=" + signedTx.txID);
+            }, () => {
+                this.cancelTransaction(url, token_id, from, amount)
+            });
+        }, () => {
+            this.cancelTransaction(url, token_id, from, amount)
+        });
     }
 }

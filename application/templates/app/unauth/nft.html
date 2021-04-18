@@ -5,11 +5,11 @@
 <div id="nft-detail">
     <img src="{{ nft.uri }} ">
     <div class="nft-infos">
-        <div class="nft-user">
+        <a class="nft-user" href="/gallery/{{user.username}}">
             <div class="nft-pp" style="background-image: url({{ user.profile_picture }})"></div>
             <div class="nft-fullname">{{ user.fullname }}</div>
             <div class="nft-username">@{{ user.username }}</div>
-        </div>
+        </a>
         <div class="nft-details">
             <div class="nft-title">{{nft.title}}</div>
             <div class="nft-token-id">{{nft.token_id}}</div>
