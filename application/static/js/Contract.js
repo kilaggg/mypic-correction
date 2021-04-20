@@ -390,6 +390,7 @@ class Contract {
                 addTooltip(parsed.message, parsed.message_full);
                 callback(parsed);
             } else if (http.status == 500){
+                console.log(http)
                 addTooltip("Failed to create the transaction", "Please retry. If the problem persists, send us an email.");
             }
         }
