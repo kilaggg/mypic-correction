@@ -269,7 +269,10 @@ def feed() -> str:
                 return manage_auction(request.form, get_jwt_identity()['username'])
 
             if request.form['type'] == 'resale' or request.form['type'] == 'validate_resale':
-                return manage_buy(request.form, get_jwt_identity()['username'])
+                try:
+                    return manage_buy(request.form, get_jwt_identity()['username'])
+                except Exception as e:
+                    json.dumps({"status": 404, "e": SYSTEM_ERROR, "e_full": e})
 
             if request.form['type'] == 'check_resale':
                 return check_resale(request.form)
