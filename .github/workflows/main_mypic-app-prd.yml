@@ -59,4 +59,4 @@ jobs:
         with:
           app-name: 'mypic-app-prd'
           slot-name: 'production'
-          publish-profile: ${{ secrets.AzureAppService_PublishProfile_630c70304c5347eb9f6eb8471b2e111e }}
+          publish-profile: ${{ secrets.AzureAppService_PublishProfile_ac7d13aef76f4ad7a196b4b349b9e416 }}
