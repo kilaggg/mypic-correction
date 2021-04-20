@@ -1,6 +1,6 @@
-from algosdk import mnemonic, template
+from algosdk import mnemonic, template, transaction, logic, error, encoding
 from algosdk.error import AlgodHTTPError
-from algosdk.future.transaction import AssetConfigTxn, AssetTransferTxn, PaymentTxn
+from algosdk.future.transaction import AssetConfigTxn, AssetTransferTxn, PaymentTxn, AssetFreezeTxn
 from application import accounts, ADDRESS_ALGO_OURSELF, algod_client, WORD_MNEMONIC
 from application.constants import CONVERT_TO_MICRO, PRICE_GET_BACK
 from binascii import unhexlify
@@ -191,3 +191,92 @@ def wait_for_confirmation(tx_id):
         tx_info = algod_client.pending_transaction_info(tx_id)
     print("Transaction {} confirmed in round {}.".format(tx_id, tx_info.get('confirmed-round')))
     return tx_info
+
+
+
+## ICO
+
+def get_mypic_asset_swap_txns(micro_algo_amount, micro_asset_amount, buyer_public_key):
+    # Retrieve the program bytes
+    program_bytes = "AiAIAQQCAOmB2lzoB9DbqAYgJgEg7enwSXp6w6FzbfJaV7JXMCbtVRVpf382aeBiISomJMkyBCISMRAjEhBAACEyBCISMRAiEhBAAEYyBCQSMwAQIhIQMwEQIxIQQABMJUMxEiUSMREhBBIQMQAxFBIQMQEhBQ4QMRMyAxIQMRUyAxIQMSAyAxIQMQQhBgwQQgBWMQcoEjEBIQUOEDEJMgMSEDEgMgMSEEIAPTMBEjMACAohBxIzAREhBBIQMwEAMwAHEhAzARQzAAASEDMBASEFDhAzARMyAxIQMwEVMgMSEDMBIDIDEhA="
+    program = base64.b64decode(program_bytes)
+    # Get suggested parameters from the network
+    tx_params = algod_client.suggested_params()
+    first_valid = tx_params.first
+    last_valid = tx_params.first + 1000
+    gh = tx_params.gh
+    fee = 0
+    contract = program
+    contract_addr = logic.address(contract)
+    print("contract_addr =", contract_addr)
+    asset_id = 194412777
+    max_fee = 1000
+
+    if micro_asset_amount <= 0:
+        raise error.TemplateInputError(
+            "At least 0 MYPIC must be requested")
+
+    if micro_asset_amount / micro_algo_amount != 32:
+        raise error.TemplateInputError(
+            "The exchange ratio of assets to microalgos must be = 32")
+
+    txn_1 = transaction.PaymentTxn(
+        buyer_public_key, fee, first_valid, last_valid, gh,
+        contract_addr,
+        int(micro_algo_amount))
+
+    txn_2 = transaction.AssetTransferTxn(
+        contract_addr, fee,
+        first_valid, last_valid, gh, buyer_public_key, micro_asset_amount, asset_id)
+
+    if txn_1.fee > max_fee or txn_2.fee > max_fee:
+        raise error.TemplateInputError(
+            "the transaction fee should not be greater than "
+            + str(max_fee))
+
+    transaction.assign_group_id([txn_1, txn_2])
+
+    lsig = transaction.LogicSig(contract)
+    stx_2 = transaction.LogicSigTransaction(txn_2, lsig)
+
+    tx_1_enc = encoding.msgpack_encode(txn_1)
+    stx_2_enc = encoding.msgpack_encode(stx_2)
+
+    txns = [tx_1_enc, stx_2_enc]
+    return txns
+
+
+def mypic_asset_swap_txns_decode(algo_payment_tx1_blob, micro_asset_amount, buyer_public_key):
+    # Retrieve the program bytes
+    program_bytes = "AiAIAQQCAOmB2lzoB9DbqAYgJgEg7enwSXp6w6FzbfJaV7JXMCbtVRVpf382aeBiISomJMkyBCISMRAjEhBAACEyBCISMRAiEhBAAEYyBCQSMwAQIhIQMwEQIxIQQABMJUMxEiUSMREhBBIQMQAxFBIQMQEhBQ4QMRMyAxIQMRUyAxIQMSAyAxIQMQQhBgwQQgBWMQcoEjEBIQUOEDEJMgMSEDEgMgMSEEIAPTMBEjMACAohBxIzAREhBBIQMwEAMwAHEhAzARQzAAASEDMBASEFDhAzARMyAxIQMwEVMgMSEDMBIDIDEhA="
+    program = base64.b64decode(program_bytes)
+    # Get suggested parameters from the network
+    tx_params = algod_client.suggested_params()
+    first_valid = tx_params.first
+    last_valid = tx_params.first + 1000
+    gh = tx_params.gh
+    fee = 0
+
+    contract = program
+    contract_addr = logic.address(contract)
+    print("contract_addr =", contract_addr)
+    asset_id = 194412777
+
+    txn_2 = transaction.AssetTransferTxn(
+        contract_addr, fee,
+        first_valid, last_valid, gh, buyer_public_key, micro_asset_amount, asset_id)
+
+    stx_1 = encoding.msgpack_decode(algo_payment_tx1_blob)
+    transaction.assign_group_id([stx_1, txn_2])
+
+    lsig = transaction.LogicSig(contract)
+    stx_2 = transaction.LogicSigTransaction(txn_2, lsig)
+    txns = [stx_1, stx_2]
+    txid = send_transactions(txns)
+    return txid
+
+
+# stx_1 = swap_txns[0].sign(buyer_private_key)
+# stx_2 = swap_txns[1]
+# gstxns = [stx_1, stx_2]
+# txid = send_transactions(algod_client_, gstxns)

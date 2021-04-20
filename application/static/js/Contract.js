@@ -397,16 +397,18 @@ class Contract {
     }
 
     cancelTransaction(url, token_id, from, amount) {
-        _callServer(url, "token_id=" + token_id + "&type=error_new" + "&price=" + amount + "&address=" + from);
+        this._callServer(url, "token_id=" + token_id + "&type=error_new" + "&price=" + amount + "&address=" + from);
     }
 
 
-    ico(url, amount) {
+    _ico(url, amount) {
+        console.log(amount);
         AlgoSignerAPI.account((from) => {
             this._callServer(url, "address=" + from + "&type=check&price=" + amount, (parsed) => {
+                amount = parsed.price;
                 let token_id = parsed.token_id;
                 let address = parsed.address;
-                let note = parsed.username + "_ico";
+                let note = "";//parsed.username + "_ico";
                 AlgoSignerAPI.get_param((tx) => {
                     if (parsed.check_token) {
                         this._ico_in_progress(url, token_id, from, address, amount, note, tx);
@@ -426,12 +428,12 @@ class Contract {
         AlgoSignerAPI.signPay(from, to, amount, note, tx, (signedTx) => {
             AlgoSignerAPI.send_algo(signedTx, (s) => {
                 this._callServer(url, 
-                    "token_id=" + token_id + "&type=validate" + "&price=" + amount + "&address=" + from + "&txID=" + signedTx.txID);
-            }, () => {
-                this.cancelTransaction(url, token_id, from, amount)
+                    "token_id=" + token_id + "&type=validate" + "&price=" + amount + "&address=" + from + "&tx=" + JSON.stringify(tx) + "&signedTx=" + JSON.stringify(signedTx));
+            }, (e) => {
+                console.log(e)
             });
-        }, () => {
-            this.cancelTransaction(url, token_id, from, amount)
+        }, (e) => {
+            console.log(e)
         });
     }
 }

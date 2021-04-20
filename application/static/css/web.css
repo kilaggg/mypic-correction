@@ -1537,8 +1537,7 @@ https://loading.io/css/
 }
 
 #token-summary #loading-bar {
-    justify-self: start;
-    grid-column: span(2);
+    justify-self: center;
 }
 
 #token p {
@@ -1554,26 +1553,13 @@ https://loading.io/css/
     gap: 30px;
 }
 
-#loading-bar, #loading-bar .front, #loading-bar .back{
-    height : 20px;
-}
-
 #loading-bar {
     position: relative;
+    top: -39px;
 }
 
-#loading-bar .back {
-    position: absolute;
-    background-color: white;
-    border: 2px solid var(--outline-color);
-}
-
-#loading-bar .front {
-    position: absolute;
-    background-color: var(--lead-color);
-    z-index: 1;
-    top: 2px;
-    left: 2px;
+#chart {
+    justify-self: center;
 }
 
 #token-presentation {

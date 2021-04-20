@@ -4,8 +4,6 @@
 {% set sideFooter = False %}
 {% endif %}
 
-<script src="{{ url_for('static', filename='/js/tooltip.js') }}"></script>
-<script src="{{ url_for('static', filename='/js/Contract.js') }}"></script>
 <div id="token">
     <div id="token-title"><a class="logo" href="/">MyPic</a></div>
     <div id="token-body">
@@ -15,9 +13,8 @@
                 <h3>Remaining MyPic: {{contract.current}}/{{contract.total}}</h3>
                 <h3>Your MyPic balance: {{contract.amount_wallet}}</h3>
                 <div id="loading-bar">
-                    <div class="front" style="width:{{contract.sell / contract.total * 300}}px"></div>
-                    <div class="back" style="width:300px"></div>
                 </div>
+                <div id="chart"></div>
             </div>
             <div>
                 <h2>Algo &#8596; MyPic Swap Contract:</h2>
@@ -50,6 +47,10 @@
         </div>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+<script src="{{ url_for('static', filename='/js/tooltip.js') }}"></script>
+<script src="{{ url_for('static', filename='/js/Contract.js') }}"></script>
 <script>
     document.getElementById("token-button").addEventListener("click", () => {
         submit_token();
@@ -57,7 +58,59 @@
     
     function submit_token() {
         let price = document.getElementById("token-price").value;
-        new Contract(CONTRACT_KIND.ICO, "/token", "", price);
+        new Contract(CONTRACT_KIND.ICO, "token", "", price);
     }
+
+
+    function render_description() {
+        var options = {
+            chart: {
+                type: 'donut',
+                height: 329
+            },
+            series: [10, 10, 15, 65],
+            labels: ['Pre-ICO', 'Partenaires', "Dev Team", "ICO"],
+            plotOptions: {
+                pie: {
+                    expandOnClick: false,
+                    donut: {
+                        size: "70%",
+                    }
+                }
+            },
+            legend: {
+                position: "bottom",
+            },
+            colors: [ '#118ab2', '#06d6a0', "#ffd166" , '#F05353'],
+        }
+        
+        var chart = new ApexCharts(document.querySelector("#chart"), options);
+        
+        chart.render();
+    }
+
+    function render_advancement() {
+        var options = {
+            chart: {
+                height: 350,
+                type: 'radialBar',
+            },
+            series: [{{contract.current/contract.total}} * 100],
+            labels: ['Progress'],
+            radialBar: {
+                hollow: {
+                    size: "70%",
+                },
+            },
+            colors: ['#F05353'],
+        };
+
+        var chart = new ApexCharts(document.querySelector("#loading-bar"), options);
+
+        chart.render();
+    }
+
+    render_description();  
+    render_advancement();
 </script>
 {% endblock %}

@@ -1,3 +1,4 @@
+from algosdk import logic
 from application import ADDRESS_ALGO_OURSELF
 from application.auction import manage_auction
 from application.buy import manage_buy, check_resale
@@ -15,7 +16,7 @@ from application.market import (
     get_resale,
     send_nft_back
 )
-from application.smart_contract import check_algo_for_tx, list_account_assets, list_account_assets_all
+from application.smart_contract import check_algo_for_tx, list_account_assets, list_account_assets_all, mypic_asset_swap_txns_decode, wait_for_confirmation
 from application.user import (
     is_follow,
     follow,
@@ -64,6 +65,7 @@ from werkzeug.security import safe_str_cmp
 import json
 import multiprocessing
 import re
+import base64
 
 bp = Blueprint('main', __name__, url_prefix='')
 REGEX_TITLE_IMAGE = "^[a-zA-Z0-9 ]*$"
@@ -763,55 +765,79 @@ def wallet_installed():
     return json.dumps({"status": 200, "message": message})
 
 
+# ICO
 
+@bp.route('/token', methods=('GET', 'POST'))
+@jwt_required
+def token():
+    TOKEN_MY_PIC = 194412777
+    email = get_jwt_identity()['email']
+    username = get_jwt_identity()['username']
+    print(request.form)
+    if request.method == 'POST':
+        if "type" in request.form and request.form['type'] == 'check':
+            if 'price' not in request.form:
+                e_full = "Price is required."
+                return json.dumps({"status": 404, "e": MISSING_ARGUMENT, "e_full": e_full})
+            if 'address' not in request.form:
+                e_full = "Address is required."
+                return json.dumps({"status": 404, "e": MISSING_ARGUMENT, "e_full": e_full})
+            try:
+                int(request.form['price'])
+            except ValueError:
+                e_full = "Enter an integer for Price."
+                return json.dumps({"status": 404, "e": WRONG_ARGUMENT, "e_full": e_full})
+            price = int(request.form['price'])
+            micro_price = price * 1000000
+            address = request.form['address']
+            bool_optin = TOKEN_MY_PIC in list_account_assets_all(address)
+            bool_tx = check_algo_for_tx(address, price, bool_optin)
+            # if not bool_tx:
+            #     e_full = "Not enough ALGO on your address, please fund your wallet."
+            #     return json.dumps({"status": 404, "e": TRANSACTION_ERROR, "e_full": e_full})
 
-## TOKEN MY PIC
+            program_bytes = "AiAIAQQCAOmB2lzoB9DbqAYgJgEg7enwSXp6w6FzbfJaV7JXMCbtVRVpf382aeBiISomJMkyBCISMRAjEhBAACEyBCISMRAiEhBAAEYyBCQSMwAQIhIQMwEQIxIQQABMJUMxEiUSMREhBBIQMQAxFBIQMQEhBQ4QMRMyAxIQMRUyAxIQMSAyAxIQMQQhBgwQQgBWMQcoEjEBIQUOEDEJMgMSEDEgMgMSEEIAPTMBEjMACAohBxIzAREhBBIQMwEAMwAHEhAzARQzAAASEDMBASEFDhAzARMyAxIQMwEVMgMSEDMBIDIDEhA="
+            contract = base64.b64decode(program_bytes)
+            contract_addr = logic.address(contract)
+            message_full = "Wait a few seconds to get your NFT"
+            return json.dumps({"status": 200, "check_token": bool_optin, "price": 2, "address": contract_addr,
+                               "token_id": TOKEN_MY_PIC, "message": TRANSACTION_STARTED, "message_full": message_full})
 
-# TOKEN_MY_PIC = 1
-# ADDRESS_ALGO_CONTRACT_MYPIC = ""
-# @bp.route('/token', methods=('GET', 'POST'))
-# @jwt_required
-# def token():
-#     email = get_jwt_identity()['email']
-#     username = get_jwt_identity()['username']
-#     if request.method == 'POST':
-#         if "type" in request.form and request.form['type'] == 'check':
-#             if 'price' not in request.form:
-#                 e_full = "Price is required."
-#                 return json.dumps({"status": 404, "e": MISSING_ARGUMENT, "e_full": e_full})
-#             if 'address' not in request.form:
-#                 e_full = "Address is required."
-#                 return json.dumps({"status": 404, "e": MISSING_ARGUMENT, "e_full": e_full})
-#             try:
-#                 int(request.form['price'])
-#             except ValueError:
-#                 e_full = "Enter an integer for Price."
-#                 return json.dumps({"status": 404, "e": WRONG_ARGUMENT, "e_full": e_full})
-#             price = int(request.form['price'])
-#             address = request.form['address']
-#             bool_optin = TOKEN_MY_PIC in list_account_assets_all(address)
-#             bool_tx = check_algo_for_tx(address, price, bool_optin)
-#             if not bool_tx:
-#                 e_full = "Not enough ALGO on your address, please fund your wallet."
-#                 return json.dumps({"status": 404, "e": TRANSACTION_ERROR, "e_full": e_full})
-#             message_full = "Wait a few seconds to get your NFT"
-#             return json.dumps({"status": 200, "check_token": bool_optin, "address": ADDRESS_ALGO_CONTRACT_MYPIC,
-#                                "token_id": TOKEN_MY_PIC, "message": TRANSACTION_STARTED, "message_full": message_full})
-#
-#         if "type" in request.form and request.form['type'] == 'validate':
-#             # TODO
-#             message_full = "TODO"
-#             return json.dumps({"status": 200, "message": TRANSACTION_STARTED, "message_full": message_full})
-#
-#     pp_extension = get_profile_picture_extension_from_email(email)
-#     pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
-#     profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
-#     pp = f"data:{pp_extension};base64,{profile_picture}"
-#
-#     contract = {
-#         "total": 1000000,
-#         "current": 300000,
-#         "sell": 700000,
-#         "amount_wallet": 3000,
-#     }
-#     return render_template(f'app/token.html', pp=pp, contract=contract)
+        if "type" in request.form and request.form['type'] == 'validate':
+            if 'price' not in request.form:
+                e_full = "Price is required."
+                return json.dumps({"status": 404, "e": MISSING_ARGUMENT, "e_full": e_full})
+            if 'signedTx' not in request.form:
+                e_full = "Signed Transaction is required."
+                return json.dumps({"status": 404, "e": MISSING_ARGUMENT, "e_full": e_full})
+            if 'address' not in request.form:
+                e_full = "Address is required."
+                return json.dumps({"status": 404, "e": MISSING_ARGUMENT, "e_full": e_full})
+            try:
+                int(request.form['price'])
+            except ValueError:
+                e_full = "Enter an integer for Price."
+                return json.dumps({"status": 404, "e": WRONG_ARGUMENT, "e_full": e_full})
+
+            signedTx = json.loads(request.form['signedTx'])
+            txid = signedTx['txID']
+            blob = signedTx['blob']
+            address = request.form['address']
+            micro_price = int(request.form['price'])
+            txid = mypic_asset_swap_txns_decode(blob, micro_price * 32, address)
+            wait_for_confirmation(txid)
+            message_full = "TODO"
+            return json.dumps({"status": 200, "message": TRANSACTION_STARTED, "message_full": message_full})
+
+    pp_extension = get_profile_picture_extension_from_email(email)
+    pp_path = pp_extension if pp_extension == 'default-profile.png' else f"{username.lower()}.{pp_extension}"
+    profile_picture = download_blob_data(PROFILE_PICTURES_CONTAINER, pp_path)
+    pp = f"data:{pp_extension};base64,{profile_picture}"
+
+    contract = {
+        "total": 1000000,
+        "current": 300000,
+        "sell": 700000,
+        "amount_wallet": 3000,
+    }
+    return render_template(f'app/token.html', pp=pp, contract=contract)
