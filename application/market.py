@@ -197,7 +197,7 @@ def create_resale_from_back(username: str, token_id: int, price: int, address: s
 
 
 def download_blob_data(container: str, filename: str):
-    blob_client = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, container, filename.lower())
+    blob_client = BlobClient.from_connection_string(BLOB_CONNECTION_STRING, container, filename)
     return base64.b64encode(blob_client.download_blob().readall()).decode('ascii')
 
 
@@ -309,13 +309,15 @@ def send_nft_back(token_id: int, address: str, tx_id: str, username: str) -> boo
 
 def upload_image_swarm(file: FileStorage, username: str, is_public) -> (str, str):
     image_format = DICTIONARY_FORMAT[secure_filename(file.filename).split('.')[-1].lower()]
-    url = SWARM_URL_NODE
-    if is_public:
-        headers = {"content-type": f"image/{image_format}"}
-    else:
-        headers = {"content-type": f"image/{image_format}", "Swarm-Encrypt": "true"}
-    result = requests.post(url, data=file, headers=headers)
-    swarm_hash = json.loads(result.content.decode('utf8'))["reference"]
+
+    from application.pinata import PinataAPI
+    arg_dict = {"api_key": 'cd8c3bcaa19a89c0f62f',
+                "api_secret": 'b4a602b4155b5131ef3a39106b40fccb8071537fc0cf9127f5da57426bbe53eb'}
+    Pinata = PinataAPI(arg_dict["api_key"], arg_dict["api_secret"])
+    (success, result) = Pinata.pin(file)
+    result = result.json()
+    swarm_hash = result['IpfsHash']
+
     image = Image.open(file)
     image_thumbnail = Image.open(file)
     output = io.BytesIO()

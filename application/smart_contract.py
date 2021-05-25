@@ -6,6 +6,7 @@ from application.constants import CONVERT_TO_MICRO, PRICE_GET_BACK
 from binascii import unhexlify
 import base64
 import json
+import base58
 
 
 def check_algo_for_tx(address: str, micro_algo: int, optin: bool):
@@ -87,7 +88,8 @@ def mint_official_nft(swarm_hash: str, is_public: bool, username: str, title: st
 
     tx_note_json_str = json.dumps(data_set)
     tx_note_bytes = tx_note_json_str.encode("utf-8")
-    swarm_hash_bytes = unhexlify(swarm_hash)
+
+    swarm_hash_bytes = unhexlify(base58.b58decode(swarm_hash)[2:].hex()) if is_public else None
     # TODO : add ...
     asset_name = f"MyPic {username} {title}"[:32]
     txn = AssetConfigTxn(sender=accounts[1]['pk'],
